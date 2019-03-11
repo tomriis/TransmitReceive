@@ -48,5 +48,8 @@ Event(1).recon = 0; % no reconstruction.
 Event(1).process = 0; % no processing
 Event(1).seqControl = 1; % transfer data to host
 SeqControl(1).command = 'transferToHost';
+SeqControl(1).argument = 1;
 % Save all the structures to a .mat file.
+
+
 save('MatFiles/L114vAcquireRF');
