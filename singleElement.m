@@ -62,13 +62,13 @@ Receive(1).sampleMode = 'NS200BW';
 Receive(1).LowPassCoef = [];
 Receive(1).InputFilter = [];
 
-% % Specify an external processing event.
-% Process(1).classname = 'External';
-% Process(1).method = 'plotSingleElement';
-% Process(1).Parameters = {'srcbuffer','receive',... % name of buffer to process.
-% 'srcbufnum',1,...
-% 'srcframenum',1,...
-% 'dstbuffer','none'};
+% Specify an external processing event.
+Process(1).classname = 'External';
+Process(1).method = 'plotSingleElement';
+Process(1).Parameters = {'srcbuffer','receive',... % name of buffer to process.
+'srcbufnum',1,...
+'srcframenum',1,...
+'dstbuffer','none'};
 
 % Specify sequence events.
 Event(1).info = 'Acquire RF Data.';
@@ -85,7 +85,7 @@ Event(2).info = 'Call external Processing function.';
 Event(2).tx = 0; % no TX structure.
 Event(2).rcv = 0; % no Rcv structure.
 Event(2).recon = 0; % no reconstruction.
-Event(2).process = 0; % call processing function
+Event(2).process = 1; % call processing function
 Event(2).seqControl = [3,4,5]; % wait for data to be transferred
 SeqControl(3).command = 'waitForTransferComplete';
 SeqControl(3).argument = 2;
