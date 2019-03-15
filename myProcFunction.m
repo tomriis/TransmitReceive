@@ -1,19 +1,16 @@
 function myProcFunction(RData)
 persistent myHandle
 
-try
-    channel = evalin('base','myPlotChnl');
-catch
-    channel =  1;
-end
+
 
 if isempty(myHandle) || ~ishandle(myHandle)
     figure;
-    myHandle = axes('XLim',[0,1500],'YLim',[-16384 16384],...,
-        'NextPlot','replacechildren');
+    myHandle = axes('NextPlot','replacechildren');
 end
-
-plot(myHandle, RData(:,channel));
+subplot(2,1,1);
+plot(RData(1,:));
+subplot(2,1,2);
+plot(RData(2,:));
 drawnow;
 return
 
