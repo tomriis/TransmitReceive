@@ -1,7 +1,7 @@
 clear all
 % Specify system parameters
 Resource.Parameters.numTransmit = 1; % no. of transmit channels
-Resource.Parameters.numRcvChannels = 2; % change to 64 for Vantage 64 system
+Resource.Parameters.numRcvChannels = 30; % change to 64 for Vantage 64 system
 Resource.Parameters.connector = 1; % trans. connector to use (V 256).
 Resource.Parameters.speedOfSound = 1540; % speed of sound in m/sec
 %Resource.Parameters.simulateMode = 1; % runs script in simulate mode
@@ -12,43 +12,47 @@ Media.MP(1,:) = [0,0,100,1.0]; % [x, y, z, reflectivity]
 % Trans.frequency = 6.25; % not needed if using default center frequency
 % Trans = computeTrans(Trans); % L11-4v transducer is 'known' transducer.
 % Specify Trans structure array.
+
 Trans.name = 'Custom';
-Trans.frequency = 5; % not needed if using default center frequency
+Trans.frequency = 0.5; % not needed if using default center frequency
 Trans.units = 'mm';
 Trans.lensCorrection = 1;
-Trans.Bandwidth = [1.5,3];
+%Trans.Bandwidth = [1.5,3];
 Trans.type = 0;
-Trans.numelements = 2;
+Trans.numelements = 30;
 Trans.elementWidth = 24;
-Trans.ElementPos = ones(2,5);
+Trans.ElementPos = ones(30,5);
 Trans.ElementSens = ones(101,1);
 Trans.connType = 1;
-Trans.Connector = (1:2)';
+Trans.Connector = (1:30)';
 Trans.impedance = 50;
-Trans.maxHighVoltage = 40;
+Trans.maxHighVoltage = 20;
 
 % Specify Resource buffers.
 Resource.RcvBuffer(1).datatype = 'int16';
-Resource.RcvBuffer(1).rowsPerFrame = 2048; % this allows for 1/4 maximum range
-Resource.RcvBuffer(1).colsPerFrame = 2;
+Resource.RcvBuffer(1).rowsPerFrame =2048; % this allows for 1/4 maximum range
+Resource.RcvBuffer(1).colsPerFrame = 30;
 Resource.RcvBuffer(1).numFrames = 1; % minimum size is 1 frame.
 % Specify Transmit waveform structure.
 TW(1).type = 'parametric';
-TW(1).Parameters = [6.25,0.67,2,1]; % A, B, C, D
+TW(1).Parameters = [0.5,0.67,2,1]; % A, B, C, D
 % Specify TX structure array.
 TX(1).waveform = 1; % use 1st TW structure.
 TX(1).focus = 0;
-TX(1).Apod = [1, 0];
+TX(1).Apod = zeros([1,30]);
+TX(1).Apod(1)=1;
 
+endDepth = 250;
 TX(1).Delay = computeTXDelays(TX(1));
 % Specify TGC Waveform structure.
 TGC(1).CntrlPts = [500,590,650,710,770,830,890,950];
 TGC(1).rangeMax = 200;
 TGC(1).Waveform = computeTGCWaveform(TGC);
 % Specify Receive structure array -
-Receive(1).Apod = ones(1,2); % if 64ch Vantage, = [ones(1,64) zeros(1,64)];
+Receive(1).Apod = zeros([1,30]); % if 64ch Vantage, = [ones(1,64) zeros(1,64)];
+Receive(1).Apod([1,30])=1;
 Receive(1).startDepth = 0;
-Receive(1).endDepth = 200;
+Receive(1).endDepth = endDepth;
 Receive(1).TGC = 1; % Use the first TGC waveform defined above
 Receive(1).mode = 0;
 Receive(1).bufnum = 1;

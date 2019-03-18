@@ -8,7 +8,7 @@ end
 subplot(2,1,1,myHandle);
 plot(RData(:,1));
 subplot(2,1,2);
-plot(RData(:,2));
+plot(RData(:,30));
 
 drawnow;
 return
