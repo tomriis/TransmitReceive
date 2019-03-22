@@ -4,6 +4,10 @@ Resource.Parameters.numTransmit = 1; % no. of transmit channels
 Resource.Parameters.numRcvChannels = 30; % change to 64 for Vantage 64 system
 Resource.Parameters.connector = 1; % trans. connector to use (V 256).
 Resource.Parameters.speedOfSound = 1540; % speed of sound in m/sec
+Resource.Parameters.simulateMode = 1; % runs script in simulate mode
+
+% Specify media points
+Media.MP(1,:) = [0,0,100,1.0]; % [x, y, z, reflectivity]
 
 % Specify Trans structure array.
 Trans.name = 'Custom';
@@ -59,7 +63,8 @@ Receive(1).sampleMode = 'NS200BW';
 Receive(1).LowPassCoef = [];
 Receive(1).InputFilter = [];
 % Size of each acquisition segment in samples 
-n = 2*(Receive(1).endDepth-Receive(1).startDepth)*Receive(1).samplesPerWave;
+%n = 2*(Receive(1).endDepth-Receive(1).startDepth)*Receive(1).samplesPerWave;
+%disp(n);
 % Specify an external processing event.
 Process(1).classname = 'External';
 Process(1).method = 'myExternFunction';
@@ -100,25 +105,7 @@ Event(3).seqControl = 6; % jump back to Event 1
 SeqControl(6).command = 'jump';
 SeqControl(6).argument = 1;
 
-EF(1).Function = text2cell('%EF#1');
-
-save('C:\Users\Verasonics\Documents\Matlab\TransmitReceive\MatFiles\L11-4vAcquireRF');
+save('C:\Users\Verasonics\Documents\Matlab\TransmitReceive\MatFiles\TxRxSingleFrame');
 return
 
-%EF#1
-myExFunction(RData)
-persistent myHandle
 
-if isempty(myHandle) || ~ishandle(myHandle)
-    figure;
-    myHandle = axes('NextPlot','replacechildren');
-end
-subplot(2,1,1);
-plot(RData(1,:));
-subplot(2,1,2);
-plot(RData(2,:));
-
-drawnow;
-return
-
-%EF#1
