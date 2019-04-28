@@ -4,14 +4,14 @@ clear all; close all; clc;
 srcDirectory = setPaths();
 
 %% Set scan parameters
-[lib,axis,locs] = verasonics1dScan(4,-24,25,50);
+[lib,axis,locs] = verasonics1dScan(1,0,25,6);
 
 %% User defined Scan Parameters
 NA = 32;
 nFrames = length(locs);
 positionerDelay = 1000; % Positioner delay in ms
 prf = 500; % Pulse repitition Frequency in Hz
-centerFrequency = 2.25; % Frequency in MHz
+centerFrequency = 0.5; % Frequency in MHz
 numHalfCycles = 2; % Number of half cycles to use in each pulse
 desiredDepth = 160; % Desired depth in mm
 
@@ -48,7 +48,7 @@ Trans.ElementSens = ones(101,1);
 Trans.connType = 1;
 Trans.Connector = 1;
 Trans.impedance = 50;
-Trans.maxHighVoltage = 96;
+Trans.maxHighVoltage = 10;
 
 
 % Specify Resource buffers.
@@ -60,9 +60,6 @@ Resource.RcvBuffer(1).numFrames = nFrames; % minimum size is 1 frame.
 % Specify Transmit waveform structure.
 TW(1).type = 'parametric';
 TW(1).Parameters = [centerFrequency,0.67,numHalfCycles,1]; % A, B, C, D
-% TW(1).type = 'pulseCode';
-% TW(1).PulseCode = generateImpulse(1/(4*2.25e6));
-% TW(1).PulseCode = generateImpulse(3/250e6);
 
 % Specify TX structure array.
 TX(1).waveform = 1; % use 1st TW structure.
@@ -201,8 +198,7 @@ Event(n).seqControl = [nsc,nsc+1,nsc+2]; % wait for data to be transferred
 n = n+1;
 
 % Save all the structures to a .mat file.
-scriptName = mfilename('fullpath');
-svName = matFileName(scriptName);
+svName = 'C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\Aims1dScan';
 save(svName);
 
 filename = svName;

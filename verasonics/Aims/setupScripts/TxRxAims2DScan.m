@@ -13,7 +13,7 @@ prf = 500; % Pulse repitition Frequency in Hz
 centerFrequency = 0.5; % Frequency in MHz
 numHalfCycles = 100; % Number of half cycles to use in each pulse
 desiredDepth = 100; % Desired depth in mm
-Vpp = 96;
+Vpp = 10;
 %% Setup System
 % Since there are often long pauses after moving the positioner
 % set a high timeout value for the verasonics DMA system
@@ -204,7 +204,7 @@ end
 %     nsc = nsc+1;
 % n = n+1;
 
-svName = 'C:\Users\Verasonics\Desktop\Taylor\Code\verasonics\Aims\MatFiles\TxRxAims2DScan';
+svName = 'C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\TxRxAims2DScan';
 save(svName);
 
 filename = svName;
