@@ -12,7 +12,7 @@ function [rx_avg_scan,tx_avg_scan] = plot_TxRxscan(RcvData, Resource, Receive)
         tx_data = zeros([numAvg, n_samples_per_frame]);
         for j = 1:numAvg
             idx = (i-1)*numAvg+j;
-            rx_data(j,:) = RcvData{1}(Receive(idx).startSample:Receive(idx).endSample,...,
+            rx_data(j,:) = RcvData{1}((Receive(idx).startSample:Receive(idx).endSample),...,
                 rx_channel, i);
             tx_data(j,:) = RcvData{1}(Receive(idx).startSample:Receive(idx).endSample,...,
                 tx_channel, i);
@@ -22,8 +22,10 @@ function [rx_avg_scan,tx_avg_scan] = plot_TxRxscan(RcvData, Resource, Receive)
     end
     
     for i = 1:n_frames
-        plot(rx_avg_scan(i,:),'DisplayName',strcat(['Scan ', num2str(i)]));
+        plot(tx_avg_scan(i,:),'DisplayName',strcat(['Scan ', num2str(i)]));
+        
         hold on;
+         plot(rx_avg_scan(i,:),'DisplayName',strcat(['rxScan ', num2str(i)]));
     end
     legend;
     xlabel('Sample Number');

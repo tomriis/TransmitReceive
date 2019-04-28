@@ -1,49 +1,57 @@
 clear all; close all; clc;
 
+%% Set up path locations
+srcDirectory = setPaths();
+
 %% Set scan parameters
-Dimensions = [1,2]; % (0:left/right,1:front/back,2:up/down)
+n_frames = 6;
+%[lib,axis,locs] = verasonics2dScan(1,-15,15,n_frames);
+Dimensions = [1 2];
 [lib,axis,LOCS1,LOCS2] = verasonics2dScan(Dimensions,[-30,-30]',[-26,-26]',[2,2]);
 LOCS1
 LOCS2
 %% User defined Scan Parameters
 NA = 32;
-verasonicsNA = NA; % TODO: Understand difference
 nFrames = length(LOCS1(:));
 positionerDelay = 1000; % Positioner delay in ms
 prf = 500; % Pulse repitition Frequency in Hz
 centerFrequency = 0.5; % Frequency in MHz
-numHalfCycles = 6; % Number of half cycles to use in each pulse
+num_half_cycles = 50; % Number of half cycles to use in each pulse
 desiredDepth = 160; % Desired depth in mm
+endDepth = desiredDepth;
 Vpp = 70;
+
 %% Setup System
 % Since there are often long pauses after moving the positioner
 % set a high timeout value for the verasonics DMA system
 Resource.VDAS.dmaTimeout = 10000;
 
 % Specify system parameters
-Resource.Parameters.numTransmit = 1; % no. of xmit chnls (V64LE,V128 or V256).
-Resource.Parameters.numRcvChannels = 30; % change to 64 for Vantage 64 or 64LE
-Resource.Parameters.connector = 1; % trans. connector to use (V256).
-Resource.Parameters.speedOfSound = 1490; % speed of sound in m/sec
-Resource.Parameters.numAvg = NA;
+Resource.Parameters.numTransmit = 1; % no. of transmit channels
+Resource.Parameters.numRcvChannels = 30; % change to 64 for Vantage 64 system
+Resource.Parameters.connector = 1; % trans. connector to use (V 256).
+Resource.Parameters.speedOfSound = 1540; % speed of sound in m/sec
 Resource.Parameters.soniqLib = lib;
+Resource.Parameters.Axis = axis;
 Resource.Parameters.LOCS1 = LOCS1;
 Resource.Parameters.LOCS2 = LOCS2;
-Resource.Parameters.Axis = axis;
-%Resource.Parameters.simulateMode = 1; % runs script in simulate mode
-Resource.Parameters.fileLocation = 'C:\Users\Verasonics\Documents\txrxdata\2DScanWithSkull\';
+Resource.Parameters.numAvg = NA;
+Resource.Parameters.rx_channel = 30;
+Resource.Parameters.tx_channel = 1;
+% Resource.Parameters.simulateMode = 1; % runs script in simulate mode
+
 % Specify media points
 Media.MP(1,:) = [0,0,100,1.0]; % [x, y, z, reflectivity]
 
 % Specify Trans structure array.
 Trans.name = 'Custom';
-Trans.frequency = centerFrequency; % not needed if using default center frequency
+Trans.frequency = centerFrequency; % Lowest transmit frequency is 0.6345 Pg. 60
 Trans.units = 'mm';
 Trans.lensCorrection = 1;
-%Trans.Bandwidth = [1.5,3];
+%Trans.Bandwidth = [1.5,3]; % Set to 0.6 of center frequency by default
 Trans.type = 0;
 Trans.numelements = 30;
-Trans.elementWidth = 25.4;
+Trans.elementWidth = 24;
 Trans.ElementPos = ones(30,5);
 Trans.ElementSens = ones(101,1);
 Trans.connType = 1;
@@ -51,25 +59,24 @@ Trans.Connector = (1:Trans.numelements)';
 Trans.impedance = 50;
 Trans.maxHighVoltage = Vpp;
 
-
 % Specify Resource buffers.
 Resource.RcvBuffer(1).datatype = 'int16';
 Resource.RcvBuffer(1).rowsPerFrame = NA*2048*4; % this allows for 1/4 maximum range
-Resource.RcvBuffer(1).colsPerFrame = Trans.numelements;
+Resource.RcvBuffer(1).colsPerFrame = Trans.numelements; % change to 256 for V256 system
 Resource.RcvBuffer(1).numFrames = nFrames; % minimum size is 1 frame.
 
 % Specify Transmit waveform structure.
 TW(1).type = 'parametric';
-TW(1).Parameters = [centerFrequency,0.67,numHalfCycles,1]; % A, B, C, D
+TW(1).Parameters = [centerFrequency,0.67,num_half_cycles,1]; % A, B, C, D
 
 % Specify TX structure array.
 TX(1).waveform = 1; % use 1st TW structure.
 TX(1).focus = 0;
 TX(1).Apod = zeros([1,30]);
 TX(1).Apod(1)=1;
-TX(1).Delay = zeros([1,30]);
+TX(1).Delay = computeTXDelays(TX(1));
 
-TPC(1).hv = Vpp;
+TPC(1).hv = 96;
 
 % Specify TGC Waveform structure.
 TGC(1).CntrlPts = ones(1,8)*100;
@@ -107,11 +114,11 @@ Process(1).classname = 'External';
 Process(1).method = 'continueScan2d';
 Process(1).Parameters = {'srcbuffer','receive',... % name of buffer to process.
 'srcbufnum',1,...
-'srcframenum',1,...
+'srcframenum',-1,...
 'dstbuffer','none'};
 
 Process(2).classname = 'External';
-Process(2).method = 'show2dScan';
+Process(2).method = 'show1dScan';
 Process(2).Parameters = {'srcbuffer','receive',... % name of buffer to process.
 'srcbufnum',1,...
 'srcframenum',0,...
@@ -136,17 +143,14 @@ firstEvent.seqControl = [1,2];
     SeqControl(nsc).command = 'timeToNextAcq';
     SeqControl(nsc).argument = (1/prf)*1e6;
     nsc = nsc+1;
-    SeqControl(nsc).command = 'triggerOut';
-    nsc = nsc+1;    
-nFrames = 4;
+
 for ii = 1:nFrames
-    for jj = 1:verasonicsNA
-        idx = (ii-1)*verasonicsNA+jj;
+    for jj = 1:NA
+        idx = (ii-1)*NA+jj;
         Event(n) = firstEvent;
         Event(n).rcv = idx;
-        Event(n).seqControl = [1,2,nsc];
+        Event(n).seqControl = [1,nsc];
          SeqControl(nsc).command = 'transferToHost';
-           curTrans = nsc;
            nsc = nsc + 1;
         n = n+1;
     end
@@ -188,24 +192,25 @@ for ii = 1:nFrames
     end
 end
 
-%C:\Users\Verasonics\Desktop\Taylor\Code\verasonics\Aims\MATFILES
+
 Event(n).info = 'Call external Processing function.';
 Event(n).tx = 0; % no TX structure.
 Event(n).rcv = 0; % no Rcv structure.
 Event(n).recon = 0; % no reconstruction.
-Event(n).process = 0; % no processing previously process = 2
+Event(n).process = 0; % call processing function
 Event(n).seqControl = [nsc,nsc+1,nsc+2]; % wait for data to be transferred
     SeqControl(nsc).command = 'waitForTransferComplete';
-    SeqControl(nsc).argument = curTrans;
+    SeqControl(nsc).argument = 2;
     nsc = nsc+1;
     SeqControl(nsc).command = 'markTransferProcessed';
-    SeqControl(nsc).argument = curTrans;
+    SeqControl(nsc).argument = 2;
     nsc = nsc+1;
     SeqControl(nsc).command = 'sync';
     nsc = nsc+1;
 n = n+1;
 
-svName = 'C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\TxRxAims2DScan';
+% Save all the structures to a .mat file.
+svName = 'C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\TxRx2DScanAveraging';
 save(svName);
 
 filename = svName;
