@@ -2,16 +2,16 @@ clear all
 %% User defined Scan Parameters
 NA = 1;
 n_frames = 6;
-[lib,axis,locs] = verasonics1dScan(1,0,25,n_frames);
-n_frames_per_scan = 11;
-positionerDelay =500;
+[lib,axis,locs] = verasonics1dScan(1,-15,15,n_frames);
+n_frames_per_scan = 10;
+positionerDelay =1000;
 frame_rate = 500;
 prf = 500; % Pulse repitition Frequency in Hz
 centerFrequency = 0.5; % Frequency in MHz
 num_half_cycles = 6; % Number of half cycles to use in each pulse
 desiredDepth = 100; % Desired depth in mm
 endDepth = desiredDepth;
-Vpp = 10; % Desired peak to peak voltage (TPC.hv)
+Vpp = 70; % Desired peak to peak voltage (TPC.hv)
 
 % Specify system parameters
 Resource.Parameters.numTransmit = 1; % no. of transmit channels
@@ -22,6 +22,8 @@ Resource.Parameters.soniqLib = lib;
 Resource.Parameters.Axis = axis;
 Resource.Parameters.locs = locs;
 Resource.Parameters.numAvg = NA;
+Resource.Parameters.rx_channel = 30;
+Resource.Parameters.tx_channel = 1;
 %Resource.Parameters.simulateMode = 1; % runs script in simulate mode
 
 % Specify media points
@@ -48,7 +50,7 @@ wavelength = Resource.Parameters.speedOfSound/(Trans.frequency*1e6);
 % Specify Resource buffers.
 Resource.RcvBuffer(1).datatype = 'int16';
 Resource.RcvBuffer(1).rowsPerFrame =2048; % Num samples per frame
-Resource.RcvBuffer(1).colsPerFrame = 30;
+Resource.RcvBuffer(1).colsPerFrame = Trans.numelements;
 Resource.RcvBuffer(1).numFrames = n_frames*n_frames_per_scan; % minimum size is 1 frame.
 % Specify Transmit waveform structure.
 TW(1).type = 'parametric';
@@ -63,7 +65,10 @@ TX(1).Apod(1)=1;
 
 
 TX(1).Delay = computeTXDelays(TX(1));
+
+TPC(1).hv = Vpp;
 % Specify TGC Waveform structure.
+
 TGC(1).CntrlPts = ones(1,8)*100; %[500,590,650,710,770,830,890,950];
 TGC(1).rangeMax = endDepth;
 TGC(1).Waveform = computeTGCWaveform(TGC);

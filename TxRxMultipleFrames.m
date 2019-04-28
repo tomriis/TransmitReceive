@@ -5,7 +5,7 @@ n_frames = 32;
 frame_rate = 500;
 prf = 500; % Pulse repitition Frequency in Hz
 centerFrequency = 0.5; % Frequency in MHz
-num_half_cycles = 6; % Number of half cycles to use in each pulse
+num_half_cycles = 60; % Number of half cycles to use in each pulse
 desiredDepth = 100; % Desired depth in mm
 endDepth = desiredDepth;
 Vpp = 96; % Desired peak to peak voltage (TPC.hv)
@@ -36,6 +36,7 @@ Trans.Connector = (1:Trans.numelements)';
 Trans.impedance = 50;
 Trans.maxHighVoltage = Vpp;
 
+TPC(1).hv = 96;
 
 wavelength = Resource.Parameters.speedOfSound/(Trans.frequency*1e6);
 % Specify Resource buffers.
@@ -127,6 +128,9 @@ Event(n).recon = 0; % no reconstruction.
 Event(n).process = 0; % no processing
 Event(n).seqControl = 2; % jump back to Event 1.
 
+svName ='C:\Users\Verasonics\Documents\Matlab\TransmitReceive\MatFiles\TxRxMultipleFrames';
+save(svName);
 
-save('C:\Users\Verasonics\Documents\Matlab\TransmitReceive\MatFiles\TxRxMultipleFrames');
+filename = svName;
+VSX
 return
