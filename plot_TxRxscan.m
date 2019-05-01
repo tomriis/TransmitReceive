@@ -22,10 +22,10 @@ function [rx_avg_scan,tx_avg_scan] = plot_TxRxscan(RcvData, Resource, Receive)
     end
     
     for i = 1:n_frames
-        plot(tx_avg_scan(i,:),'DisplayName',strcat(['Scan ', num2str(i)]));
-        
-        hold on;
+        %plot(tx_avg_scan(i,:),'DisplayName',strcat(['Scan ', num2str(i)]));
          plot(rx_avg_scan(i,:),'DisplayName',strcat(['rxScan ', num2str(i)]));
+        hold on;
+        
     end
     legend;
     xlabel('Sample Number');

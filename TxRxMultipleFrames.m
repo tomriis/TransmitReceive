@@ -63,7 +63,7 @@ TGC(1).rangeMax = endDepth;
 TGC(1).Waveform = computeTGCWaveform(TGC);
 % Specify Receive structure array -
 Apod = zeros([1,30]); % if 64ch Vantage, = [ones(1,64) zeros(1,64)];
-Apod([1,30])=1;
+Apod([1,29])=1;
 % Specify Receive structure array -
 Receive = repmat(struct(...
     'Apod', Apod, ... 

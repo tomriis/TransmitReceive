@@ -13,8 +13,8 @@ end
 title(myHandle, "Channel 1");
 plot(myHandle, RData(:,1));
 %subplot(2,1,2);
-title(myHandleReceive, "Channel 30");
-plot(myHandleReceive, RData(:,30));
+title(myHandleReceive, "Channel 29");
+plot(myHandleReceive, RData(:,29));
 
 drawnow;
 return

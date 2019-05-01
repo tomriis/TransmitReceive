@@ -7,7 +7,7 @@ srcDirectory = setPaths();
 n_frames = 6;
 %[lib,axis,locs] = verasonics2dScan(1,-15,15,n_frames);
 Dimensions = [1 2];
-[lib,axis,LOCS1,LOCS2] = verasonics2dScan(Dimensions,[-30,-30]',[-26,-26]',[2,2]);
+[lib,axis,LOCS1,LOCS2] = verasonics2dScan(Dimensions,[-5,-5]',[5,5]',[4,4]);
 LOCS1
 LOCS2
 %% User defined Scan Parameters
@@ -15,7 +15,7 @@ NA = 32;
 nFrames = length(LOCS1(:));
 positionerDelay = 1000; % Positioner delay in ms
 prf = 500; % Pulse repitition Frequency in Hz
-centerFrequency = 0.5; % Frequency in MHz
+centerFrequency = 0.55; % Frequency in MHz
 num_half_cycles = 50; % Number of half cycles to use in each pulse
 desiredDepth = 160; % Desired depth in mm
 endDepth = desiredDepth;
@@ -76,7 +76,7 @@ TX(1).Apod = zeros([1,30]);
 TX(1).Apod(1)=1;
 TX(1).Delay = computeTXDelays(TX(1));
 
-TPC(1).hv = 96;
+TPC(1).hv = Vpp;
 
 % Specify TGC Waveform structure.
 TGC(1).CntrlPts = ones(1,8)*100;
