@@ -5,10 +5,10 @@ n_frames = 32;
 frame_rate = 500;
 prf = 500; % Pulse repitition Frequency in Hz
 centerFrequency = 0.5; % Frequency in MHz
-num_half_cycles = 60; % Number of half cycles to use in each pulse
-desiredDepth = 100; % Desired depth in mm
+num_half_cycles = 20; % Number of half cycles to use in each pulse
+desiredDepth = 160; % Desired depth in mm
 endDepth = desiredDepth;
-Vpp = 96; % Desired peak to peak voltage (TPC.hv)
+Vpp = 70; % Desired peak to peak voltage (TPC.hv)
 
 % Specify system parameters
 Resource.Parameters.numTransmit = 1; % no. of transmit channels
@@ -36,7 +36,7 @@ Trans.Connector = (1:Trans.numelements)';
 Trans.impedance = 50;
 Trans.maxHighVoltage = Vpp;
 
-TPC(1).hv = 96;
+TPC(1).hv = Vpp;
 
 wavelength = Resource.Parameters.speedOfSound/(Trans.frequency*1e6);
 % Specify Resource buffers.
@@ -63,7 +63,7 @@ TGC(1).rangeMax = endDepth;
 TGC(1).Waveform = computeTGCWaveform(TGC);
 % Specify Receive structure array -
 Apod = zeros([1,30]); % if 64ch Vantage, = [ones(1,64) zeros(1,64)];
-Apod([1,29])=1;
+Apod([1,30])=1;
 % Specify Receive structure array -
 Receive = repmat(struct(...
     'Apod', Apod, ... 

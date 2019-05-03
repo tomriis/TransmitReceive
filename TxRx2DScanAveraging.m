@@ -1,22 +1,16 @@
 clear all; close all; clc;
 
-%% Set up path locations
-srcDirectory = setPaths();
-
-%% Set scan parameters
-n_frames = 6;
 %[lib,axis,locs] = verasonics2dScan(1,-15,15,n_frames);
 Dimensions = [1 2];
-[lib,axis,LOCS1,LOCS2] = verasonics2dScan(Dimensions,[-5,-5]',[5,5]',[4,4]);
-LOCS1
-LOCS2
+[lib,axis,LOCS1,LOCS2] = verasonics2dScan(Dimensions,[-1,29]',[1,31]',[2,2]);
+positions = get_positions(LOCS1, LOCS2); 
 %% User defined Scan Parameters
 NA = 32;
 nFrames = length(LOCS1(:));
 positionerDelay = 1000; % Positioner delay in ms
 prf = 500; % Pulse repitition Frequency in Hz
-centerFrequency = 0.55; % Frequency in MHz
-num_half_cycles = 50; % Number of half cycles to use in each pulse
+centerFrequency = 0.5; % Frequency in MHz
+num_half_cycles = 40; % Number of half cycles to use in each pulse
 desiredDepth = 160; % Desired depth in mm
 endDepth = desiredDepth;
 Vpp = 70;
@@ -38,6 +32,7 @@ Resource.Parameters.LOCS2 = LOCS2;
 Resource.Parameters.numAvg = NA;
 Resource.Parameters.rx_channel = 30;
 Resource.Parameters.tx_channel = 1;
+Resource.Parameters.positions = positions;
 % Resource.Parameters.simulateMode = 1; % runs script in simulate mode
 
 % Specify media points
@@ -79,7 +74,7 @@ TX(1).Delay = computeTXDelays(TX(1));
 TPC(1).hv = Vpp;
 
 % Specify TGC Waveform structure.
-TGC(1).CntrlPts = ones(1,8)*100;
+TGC(1).CntrlPts = ones(1,8)*0;
 TGC(1).rangeMax = 1;
 TGC(1).Waveform = computeTGCWaveform(TGC);
 
