@@ -1,21 +1,32 @@
 clear all
 %% User defined Scan Parameters
 NA = 1;
-n_frames = 32;
+nFrames = 32;
+positionerDelay = 1000; % Positioner delay in ms
 frame_rate = 500;
 prf = 500; % Pulse repitition Frequency in Hz
 centerFrequency = 0.5; % Frequency in MHz
 num_half_cycles = 20; % Number of half cycles to use in each pulse
 desiredDepth = 160; % Desired depth in mm
 endDepth = desiredDepth;
-Vpp = 70; % Desired peak to peak voltage (TPC.hv)
+rx_channel = 130;
+Vpp = 70;
+
+%% Setup System
+% Since there are often long pauses after moving the positioner
+% set a high timeout value for the verasonics DMA system
+Resource.VDAS.dmaTimeout = 10000;
 
 % Specify system parameters
 Resource.Parameters.numTransmit = 1; % no. of transmit channels
-Resource.Parameters.numRcvChannels = 30; % change to 64 for Vantage 64 system
-Resource.Parameters.connector = 1; % trans. connector to use (V 256).
+Resource.Parameters.numRcvChannels = rx_channel; % change to 64 for Vantage 64 system
+Resource.Parameters.connector = 0; % trans. connector to use (V 256). Use 0 for 129-256
 Resource.Parameters.speedOfSound = 1540; % speed of sound in m/sec
-%Resource.Parameters.simulateMode = 1; % runs script in simulate mode
+Resource.Parameters.Axis = axis;
+Resource.Parameters.numAvg = NA;
+Resource.Parameters.rx_channel = rx_channel;
+Resource.Parameters.tx_channel = 1;
+% Resource.Parameters.simulateMode = 1; % runs script in simulate mode
 
 % Specify media points
 Media.MP(1,:) = [0,0,100,1.0]; % [x, y, z, reflectivity]
@@ -25,45 +36,45 @@ Trans.name = 'Custom';
 Trans.frequency = centerFrequency; % Lowest transmit frequency is 0.6345 Pg. 60
 Trans.units = 'mm';
 Trans.lensCorrection = 1;
-%Trans.Bandwidth = [1.5,3]; % Set to 0.6 of center frequency by default
+%Trans.Bandwidth = [0,3]; % Set to 0.6 of center frequency by default
 Trans.type = 0;
-Trans.numelements = 30;
+Trans.numelements = Resource.Parameters.rx_channel;
 Trans.elementWidth = 24;
-Trans.ElementPos = ones(30,5);
+Trans.ElementPos = ones(Resource.Parameters.rx_channel,5);
 Trans.ElementSens = ones(101,1);
 Trans.connType = 1;
 Trans.Connector = (1:Trans.numelements)';
 Trans.impedance = 50;
 Trans.maxHighVoltage = Vpp;
 
-TPC(1).hv = Vpp;
-
-wavelength = Resource.Parameters.speedOfSound/(Trans.frequency*1e6);
 % Specify Resource buffers.
 Resource.RcvBuffer(1).datatype = 'int16';
-Resource.RcvBuffer(1).rowsPerFrame =2048; % Num samples per frame
-Resource.RcvBuffer(1).colsPerFrame = 30;
-Resource.RcvBuffer(1).numFrames = n_frames; % minimum size is 1 frame.
+Resource.RcvBuffer(1).rowsPerFrame = NA*2048*4; % this allows for 1/4 maximum range
+Resource.RcvBuffer(1).colsPerFrame = Trans.numelements; % change to 256 for V256 system
+Resource.RcvBuffer(1).numFrames = nFrames; % minimum size is 1 frame.
+
 % Specify Transmit waveform structure.
 TW(1).type = 'parametric';
-TW(1).Parameters = [Trans.frequency,0.67, num_half_cycles, 1]; % A, B, C, D
-TW.equalize = 1; % Default value: equalize = 1  
+TW(1).Parameters = [centerFrequency,0.67,num_half_cycles,1]; % A, B, C, D
 
 % Specify TX structure array.
 TX(1).waveform = 1; % use 1st TW structure.
 TX(1).focus = 0;
-TX(1).Apod = zeros([1,30]);
+TX(1).Apod = zeros([1,Resource.Parameters.rx_channel]);
 TX(1).Apod(1)=1;
-
-
 TX(1).Delay = computeTXDelays(TX(1));
+
+TPC(1).hv = Vpp;
+
 % Specify TGC Waveform structure.
-TGC(1).CntrlPts = ones(1,8)*100; %[500,590,650,710,770,830,890,950];
-TGC(1).rangeMax = endDepth;
+TGC(1).CntrlPts = ones(1,8)*100;
+TGC(1).rangeMax = 1;
 TGC(1).Waveform = computeTGCWaveform(TGC);
+
 % Specify Receive structure array -
-Apod = zeros([1,30]); % if 64ch Vantage, = [ones(1,64) zeros(1,64)];
-Apod([1,30])=1;
+Apod = zeros([1,Resource.Parameters.rx_channel]); % if 64ch Vantage, = [ones(1,64) zeros(1,64)];
+Apod([1,Resource.Parameters.rx_channel])=1;
+
 % Specify Receive structure array -
 Receive = repmat(struct(...
     'Apod', Apod, ... 

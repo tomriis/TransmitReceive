@@ -13,7 +13,7 @@ centerFrequency = 0.5; % Frequency in MHz
 num_half_cycles = 20; % Number of half cycles to use in each pulse
 desiredDepth = 160; % Desired depth in mm
 endDepth = desiredDepth;
-rx_channel = 100;
+rx_channel = 130;
 Vpp = 70;
 
 %% Setup System
@@ -24,7 +24,7 @@ Resource.VDAS.dmaTimeout = 10000;
 % Specify system parameters
 Resource.Parameters.numTransmit = 1; % no. of transmit channels
 Resource.Parameters.numRcvChannels = rx_channel; % change to 64 for Vantage 64 system
-Resource.Parameters.connector = 1; % trans. connector to use (V 256).
+Resource.Parameters.connector = 0; % trans. connector to use (V 256). Use 0 for 129-256
 Resource.Parameters.speedOfSound = 1540; % speed of sound in m/sec
 Resource.Parameters.soniqLib = lib;
 Resource.Parameters.Axis = axis;
