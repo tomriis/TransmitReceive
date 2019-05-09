@@ -9,6 +9,7 @@ function plot_areaerrorbar(data, options)
         options.alpha      = 0.5;
         options.line_width = 2;
         options.error      = 'std';
+        options.DisplayName = '';
     end
     if(isfield(options,'x_axis')==0), options.x_axis = 1:size(data,2); end
     options.x_axis = options.x_axis(:);
@@ -33,7 +34,7 @@ function plot_areaerrorbar(data, options)
     set(patch, 'FaceAlpha', options.alpha);
     hold on;
     plot(options.x_axis, data_mean, 'color', options.color_line, ...
-        'LineWidth', options.line_width);
+        'LineWidth', options.line_width, 'DisplayName',options.DisplayName);
     hold off;
     
 end

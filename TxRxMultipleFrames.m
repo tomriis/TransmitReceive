@@ -9,8 +9,9 @@ centerFrequency = 0.5; % Frequency in MHz
 num_half_cycles = 20; % Number of half cycles to use in each pulse
 desiredDepth = 160; % Desired depth in mm
 endDepth = desiredDepth;
-rx_channel = 130;
-Vpp = 70;
+rx_channel = 228;
+tx_channel = 100;
+Vpp = 50;
 
 %% Setup System
 % Since there are often long pauses after moving the positioner
@@ -18,15 +19,21 @@ Vpp = 70;
 Resource.VDAS.dmaTimeout = 10000;
 
 % Specify system parameters
-Resource.Parameters.numTransmit = 1; % no. of transmit channels
+Resource.Parameters.numTransmit = tx_channel; % no. of transmit channels
 Resource.Parameters.numRcvChannels = rx_channel; % change to 64 for Vantage 64 system
 Resource.Parameters.connector = 0; % trans. connector to use (V 256). Use 0 for 129-256
 Resource.Parameters.speedOfSound = 1540; % speed of sound in m/sec
 Resource.Parameters.Axis = axis;
 Resource.Parameters.numAvg = NA;
 Resource.Parameters.rx_channel = rx_channel;
-Resource.Parameters.tx_channel = 1;
+Resource.Parameters.tx_channel = tx_channel;
 % Resource.Parameters.simulateMode = 1; % runs script in simulate mode
+
+RcvProfile.AntiAliasCutoff = 10; %allowed values are 5, 10, 15, 20, and 30
+%RcvProfile.PgaHPF = 80; %enables the integrator feedback path, 0 disables
+%RcvProfile.LnaHPF = 50; % (200, 150,100,50) 200 KHz, 150 KHz, 100 KHz and 50 KHz respectively. 
+
+% Specify Transmit waveform structure.
 
 % Specify media points
 Media.MP(1,:) = [0,0,100,1.0]; % [x, y, z, reflectivity]
@@ -61,7 +68,7 @@ TW(1).Parameters = [centerFrequency,0.67,num_half_cycles,1]; % A, B, C, D
 TX(1).waveform = 1; % use 1st TW structure.
 TX(1).focus = 0;
 TX(1).Apod = zeros([1,Resource.Parameters.rx_channel]);
-TX(1).Apod(1)=1;
+TX(1).Apod(tx_channel)=1;
 TX(1).Delay = computeTXDelays(TX(1));
 
 TPC(1).hv = Vpp;
@@ -73,7 +80,7 @@ TGC(1).Waveform = computeTGCWaveform(TGC);
 
 % Specify Receive structure array -
 Apod = zeros([1,Resource.Parameters.rx_channel]); % if 64ch Vantage, = [ones(1,64) zeros(1,64)];
-Apod([1,Resource.Parameters.rx_channel])=1;
+Apod([Resource.Parameters.tx_channel,Resource.Parameters.rx_channel])=1;
 
 % Specify Receive structure array -
 Receive = repmat(struct(...

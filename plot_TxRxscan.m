@@ -8,7 +8,7 @@ function [rx_avg_scan,tx_avg_scan] = plot_TxRxscan(RcvData, Resource, Receive, f
     for i = 1:n_frames
         if i == frame_number || frame_number ==0
         %plot(tx_avg_scan(i,:),'DisplayName',strcat(['Scan ', num2str(i)]));
-            plot(t, rx_avg_scan(i,:),'DisplayName',strcat([' x: ', num2str(pos(i,1)),' y: ', num2str(pos(i,2))]));
+            plot(t, rx_avg_scan(i,:),'DisplayName',strcat([' Receive: ', num2str(i)]));
         hold on;
         end
     end

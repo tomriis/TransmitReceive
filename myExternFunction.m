@@ -10,9 +10,10 @@ if isempty(myHandleReceive) || ~ishandle(myHandleReceive)
     figure;
     myHandleReceive = axes('NextPlot','replacechildren');
 end
-title(myHandle, "Channel 1");
-plot(myHandle, RData(:,1));
-%subplot(2,1,2);
+tx_channel = Resource.Parameters.tx_channel;
+title(myHandle, strcat(['Channel ', num2str(tx_channel)]));
+plot(myHandle, RData(:,tx_channel));
+
 rx_channel = Resource.Parameters.rx_channel;
 title(myHandleReceive, strcat(['Channel ', num2str(rx_channel)]));
 plot(myHandleReceive, RData(:,rx_channel));
