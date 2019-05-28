@@ -13,9 +13,9 @@ centerFrequency = 0.5; % Frequency in MHz
 num_half_cycles = 30; % Number of half cycles to use in each pulse
 desiredDepth = 160; % Desired depth in mm
 endDepth = desiredDepth;
-rx_channel = 228;
-tx_channel = 100;
-Vpp = 75;
+rx_channel = 100;
+tx_channel = 1;
+Vpp = 7;
 
 %% Setup System
 % Since there are often long pauses after moving the positioner
@@ -25,7 +25,7 @@ Resource.VDAS.dmaTimeout = 10000;
 % Specify system parameters
 Resource.Parameters.numTransmit = tx_channel; % no. of transmit channels
 Resource.Parameters.numRcvChannels = rx_channel; % change to 64 for Vantage 64 system
-Resource.Parameters.connector = 0; % trans. connector to use (V 256). Use 0 for 129-256
+Resource.Parameters.connector = 1; % trans. connector to use (V 256). Use 0 for 129-256
 Resource.Parameters.speedOfSound = 1540; % speed of sound in m/sec
 Resource.Parameters.soniqLib = lib;
 Resource.Parameters.Axis = axis;
@@ -98,8 +98,9 @@ firstReceive.bufnum = 1;
 firstReceive.framenum = 1;
 firstReceive.acqNum = 1;
 firstReceive.sampleMode = 'custom';
-firstReceive.decimSampleRate = 30*Trans.frequency;
-firstReceive.LowPassCoef = [];
+firstReceive.decimSampleRate = 50*Trans.frequency;
+firstReceive.LowPassCoef = [+0.00000 +0.00000 +0.00000 +0.00000 +0.00000 +0.00000...
+ +0.00000 +0.00000 +0.00000 +0.00000 +0.00000 +1.00000];
 firstReceive.InputFilter = [];
 
 for ii = 1:nFrames
