@@ -29,7 +29,7 @@ function plot_areaerrorbar(data, options)
     % Plotting the result
     figure(options.handle);
     x_vector = [options.x_axis', fliplr(options.x_axis')];
-    patch = fill(x_vector, [data_mean+error,fliplr(data_mean-error)], options.color_area);
+    patch = fill(x_vector, [data_mean+error,fliplr(data_mean-error)], options.color_area, 'DisplayName','');
     set(patch, 'edgecolor', 'none');
     set(patch, 'FaceAlpha', options.alpha);
     hold on;
