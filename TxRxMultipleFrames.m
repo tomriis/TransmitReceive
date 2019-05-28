@@ -9,9 +9,9 @@ centerFrequency = 0.5; % Frequency in MHz
 num_half_cycles = 20; % Number of half cycles to use in each pulse
 desiredDepth = 160; % Desired depth in mm
 endDepth = desiredDepth;
-rx_channel = 228;
-tx_channel = 100;
-Vpp = 50;
+rx_channel = 100;
+tx_channel = 1;
+Vpp = 15;
 
 %% Setup System
 % Since there are often long pauses after moving the positioner
@@ -21,7 +21,7 @@ Resource.VDAS.dmaTimeout = 10000;
 % Specify system parameters
 Resource.Parameters.numTransmit = tx_channel; % no. of transmit channels
 Resource.Parameters.numRcvChannels = rx_channel; % change to 64 for Vantage 64 system
-Resource.Parameters.connector = 0; % trans. connector to use (V 256). Use 0 for 129-256
+Resource.Parameters.connector = 1; % trans. connector to use (V 256). Use 0 for 129-256
 Resource.Parameters.speedOfSound = 1540; % speed of sound in m/sec
 Resource.Parameters.Axis = axis;
 Resource.Parameters.numAvg = NA;
@@ -56,7 +56,7 @@ Trans.maxHighVoltage = Vpp;
 
 % Specify Resource buffers.
 Resource.RcvBuffer(1).datatype = 'int16';
-Resource.RcvBuffer(1).rowsPerFrame = NA*2048*4; % this allows for 1/4 maximum range
+Resource.RcvBuffer(1).rowsPerFrame = NA*2048*10; % this allows for 1/4 maximum range
 Resource.RcvBuffer(1).colsPerFrame = Trans.numelements; % change to 256 for V256 system
 Resource.RcvBuffer(1).numFrames = nFrames; % minimum size is 1 frame.
 
@@ -92,10 +92,12 @@ Receive = repmat(struct(...
     'bufnum', 1, ...
     'framenum', 1, ...
     'acqNum', 1, ...
-    'sampleMode', 'NS200BW', ...
+    'sampleMode', 'custom', ...
+    'decimSampleRate', 50*Trans.frequency,...
     'LowPassCoef',[],...
     'InputFilter',[]),...
     1,Resource.RcvBuffer(1).numFrames);
+
 % - Set event specific Receive attributes.
 for i = 1:Resource.RcvBuffer(1).numFrames
 Receive(i).framenum = i;
