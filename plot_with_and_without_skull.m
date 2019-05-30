@@ -25,27 +25,27 @@ hold on;
 %plot(t,wos_rx_data(acq_number,:),'DisplayName','No Skull');
 options.color_area = [128 193 219]./255;    % Blue theme
 options.color_line = [ 52 148 186]./255;
-data = ws_rx_data;
+data = 45*ws_rx_data;
 options.DisplayName = 'Skull';
 plot_areaerrorbar(data, options)
 legend;
-title('163 Rx 15 Cycles, Signal Average and Std');
+title('184 Rx 15 Cycles');
 xlabel('Time (us)');
 hold off;
 
-figure;
-acqs = size(ws_rx_data,1);
-a_n = [1, floor(acqs/2), acqs];
-for i = 1:3
-plot(t,ws_rx_data(a_n(i),:),'DisplayName',strcat(['Skull ',num2str(a_n(i))]));
-hold on;
-plot(t,wos_rx_data(a_n(i),:),'DisplayName',strcat(['No Skull ',num2str(a_n(i))]));
-hold on;
-end
-hold off;
-legend;
-title('163 mm Rx 15 Cycles, Individual Traces');
-xlabel('Time (us)');
+% figure;
+% acqs = size(ws_rx_data,1);
+% a_n = [1, floor(acqs/2), acqs];
+% for i = 1:3
+% plot(t,ws_rx_data(a_n(i),:),'DisplayName',strcat(['Skull ',num2str(a_n(i))]));
+% hold on;
+% plot(t,wos_rx_data(a_n(i),:),'DisplayName',strcat(['No Skull ',num2str(a_n(i))]));
+% hold on;
+% end
+% hold off;
+% legend;
+% title('184 mm Rx 15 Cycles, Individual Traces');
+% xlabel('Time (us)');
 
 % [Ps,f1] = fft_of(ws_rx_data(a_n(i),:),fs);
 % [Pos,f2] = fft_of(wos_rx_data(a_n(i),:),fs);

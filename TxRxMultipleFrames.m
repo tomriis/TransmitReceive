@@ -3,15 +3,14 @@ clear all
 NA = 1;
 nFrames = 32;
 positionerDelay = 1000; % Positioner delay in ms
-frame_rate = 500;
-prf = 500; % Pulse repitition Frequency in Hz
+frame_rate = 5;
 centerFrequency = 0.5; % Frequency in MHz
-num_half_cycles = 20; % Number of half cycles to use in each pulse
-desiredDepth = 160; % Desired depth in mm
+num_half_cycles = 100; % Number of half cycles to use in each pulse
+desiredDepth = 100; % Desired depth in mm
 endDepth = desiredDepth;
 rx_channel = 100;
 tx_channel = 1;
-Vpp = 15;
+Vpp = 75;
 
 %% Setup System
 % Since there are often long pauses after moving the positioner
@@ -71,10 +70,10 @@ TX(1).Apod = zeros([1,Resource.Parameters.rx_channel]);
 TX(1).Apod(tx_channel)=1;
 TX(1).Delay = computeTXDelays(TX(1));
 
-TPC(1).hv = Vpp;
+TPC(1).hv = 6;%Vpp;
 
 % Specify TGC Waveform structure.
-TGC(1).CntrlPts = ones(1,8)*100;
+TGC(1).CntrlPts = ones(1,8)*0;
 TGC(1).rangeMax = 1;
 TGC(1).Waveform = computeTGCWaveform(TGC);
 
