@@ -1,4 +1,4 @@
-function [d_t] = calculate_speedup(skull,no_skull,frame_number)
+function [d_t_mat, x1,x_end,ws_rx,wos_rx] = calculate_speedup(skull,no_skull,frame_number)
 
 ws = load(skull,'RcvData','Resource','Receive');
 wos = load(no_skull,'RcvData','Resource','Receive');
@@ -25,20 +25,34 @@ while true
     if w==1
         positions = rect.Position;
         x1 = fix(positions(1)); x2 = fix(positions(1)+positions(3));
-
+        w = 0;
+        while true
+            w = waitforbuttonpress;
+            if w == 1
+                positions = rect.Position;
+                x3 = fix(x1+positions(3));
+                break;
+            end
+        end
         break;
     end
 end
-positions = rect.Position;
+% positions = rect.Position;
 close(h);
-x1 = fix(positions(1)); x2 = fix(positions(1)+positions(3));
+% x1 = fix(positions(1)); x2 = fix(positions(1)+positions(3));
+x_end = x2:20:x3;
 
 n_acquisitions = size(ws_rx_data,1);
 d_t = zeros([1,n_acquisitions]);
+
+d_t_mat = zeros([n_acquisitions, length(x_end)]);
+
+for k = 1:length(x_end)
+
 for j = 1:n_acquisitions
-ws_rx = ws_rx_data(j,x1:x2);
-wos_rx = wos_rx_data(j, x1:x2);
-t_slice = t(x1:x2);
+ws_rx = ws_rx_data(j,x1:x_end(k));
+wos_rx = wos_rx_data(j, x1:x_end(k));
+t_slice = t(x1:x_end(k));
 % Scale data to match
 
 [ws_rx,wos_rx] = scale_with_to_without_skull(ws_rx, wos_rx);
@@ -60,28 +74,43 @@ new_ws_rx_data(1:i) = u_ws;
 
 d_t(j)= i*1/fs;
 end
-figure;
-plot(t_slice-min(t_slice), cost./max(cost));
-title('Cost Function');
-xlabel('\Delta t');
+d_t_mat(:,k) = d_t;
+end
 
 figure;
-subplot(3,1,1);
+subplot(2,1,1);
 plot(t_slice, ws_rx,'DisplayName','No Skull');
 hold on; plot(t_slice, wos_rx,'DisplayName','Skull'); hold off;
-xlabel('Time');
+xlabel('Time (us)');
 title('Original Signal');
 
-subplot(3,1,2);
-plot(t_slice, new_ws_rx_data,'DisplayName','No Skull');
-hold on; plot(t_slice, wos_rx,'DisplayName','Skull'); hold off;
-xlabel('Time');
-title('Shifted Signal');
-
-subplot(3,1,3);
-histogram(d_t);
-xlabel('\Delta t (us)');
-title(strcat(['\Delta t over all ', num2str(n_acquisitions),' Acquisitions']));
+subplot(2,1,2);
+plot(t(x_end),median(d_t_mat,1));
+xlabel('Signal End Time (us)');
+ylabel('\Delta t');
+title('Median of \Delta t Over 100 Acquisitions');
+% figure;
+% plot(t_slice-min(t_slice), cost./max(cost));
+% title('Cost Function');
+% xlabel('\Delta t');
+% 
+% figure;
+% subplot(3,1,1);
+% plot(t_slice, ws_rx,'DisplayName','No Skull');
+% hold on; plot(t_slice, wos_rx,'DisplayName','Skull'); hold off;
+% xlabel('Time');
+% title('Original Signal');
+% 
+% subplot(3,1,2);
+% plot(t_slice, new_ws_rx_data,'DisplayName','No Skull');
+% hold on; plot(t_slice, wos_rx,'DisplayName','Skull'); hold off;
+% xlabel('Time');
+% title('Shifted Signal');
+% 
+% subplot(3,1,3);
+% histogram(d_t);
+% xlabel('\Delta t (us)');
+% title(strcat(['\Delta t over all ', num2str(n_acquisitions),' Acquisitions']));
 
 end
 
