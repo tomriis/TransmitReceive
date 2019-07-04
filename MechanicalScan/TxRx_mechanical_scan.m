@@ -1,8 +1,8 @@
 function TxRx_mechanical_scan(app)
-
+evalin('base','clear');
 %% User defined Scan Parameters
 NA = 100;
-nFrames = length(LOCS1(:));
+nFrames = length(app.positions);
 positionerDelay = 1000; % Positioner delay in ms
 centerFrequency = 0.5; % Frequency in MHz
 num_half_cycles = 20; % Number of half cycles to use in each pulse
@@ -23,10 +23,11 @@ Resource.Parameters.numRcvChannels = rx_channel; % change to 64 for Vantage 64 s
 Resource.Parameters.connector = 1; % trans. connector to use (V 256). Use 0 for 129-256
 Resource.Parameters.speedOfSound = 1540; % speed of sound in m/sec
 Resource.Parameters.app = app;
+Resource.Paramaters.location = 1;
 Resource.Parameters.numAvg = NA;
 Resource.Parameters.rx_channel = rx_channel;
 Resource.Parameters.tx_channel = tx_channel;
-Resource.Parameters.positions = positions;
+Resource.Parameters.positions = app.positions;
 % Resource.Parameters.simulateMode = 1; % runs script in simulate mode
 RcvProfile.AntiAliasCutoff = 10; %allowed values are 5, 10, 15, 20, and 30
 %RcvProfile.PgaHPF = 80; %enables the integrator feedback path, 0 disables
@@ -67,6 +68,10 @@ TX(1).waveform = 1; % use 1st TW structure.
 TX(1).focus = 0;
 TX(1).Apod = zeros([1,Resource.Parameters.rx_channel]);
 TX(1).Apod(tx_channel)=1;
+
+assignin('base','Trans',Trans);
+assignin('base','Resource',Resource);
+
 TX(1).Delay = computeTXDelays(TX(1));
 
 TPC(1).hv = Vpp;
@@ -192,10 +197,8 @@ n = n+1;
 
 % Save all the structures to a .mat file.
 svName = 'C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\TxRx2DScanAveraging';
-save(svName);
-
 filename = svName;
-VSX
-return
-
+save(svName);
+evalin('base', 'load(''C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\TxRx2DScanAveraging.mat'')');
+evalin('base','VSX');
 end
