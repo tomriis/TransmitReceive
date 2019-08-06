@@ -1,16 +1,16 @@
 clear all
 %% User defined Scan Parameters
 NA = 1;
-nFrames = 32;
+nFrames = 10;
 positionerDelay = 1000; % Positioner delay in ms
 frame_rate = 5;
-centerFrequency = 0.5; % Frequency in MHz
-num_half_cycles = 100; % Number of half cycles to use in each pulse
+centerFrequency = 1.1; % Frequency in MHz
+num_half_cycles = 200; % Number of half cycles to use in each pulse
 desiredDepth = 100; % Desired depth in mm
 endDepth = desiredDepth;
 rx_channel = 100;
 tx_channel = 1;
-Vpp = 75;
+Vpp =40;
 
 %% Setup System
 % Since there are often long pauses after moving the positioner
@@ -26,7 +26,7 @@ Resource.Parameters.Axis = axis;
 Resource.Parameters.numAvg = NA;
 Resource.Parameters.rx_channel = rx_channel;
 Resource.Parameters.tx_channel = tx_channel;
-% Resource.Parameters.simulateMode = 1; % runs script in simulate mode
+%Resource.Parameters.simulateMode = 1; % runs script in simulate mode
 
 RcvProfile.AntiAliasCutoff = 10; %allowed values are 5, 10, 15, 20, and 30
 %RcvProfile.PgaHPF = 80; %enables the integrator feedback path, 0 disables
@@ -62,7 +62,11 @@ Resource.RcvBuffer(1).numFrames = nFrames; % minimum size is 1 frame.
 % Specify Transmit waveform structure.
 TW(1).type = 'parametric';
 TW(1).Parameters = [centerFrequency,0.67,num_half_cycles,1]; % A, B, C, D
-
+%TW2 = waveform_parameters_to_envelope(5e6, 0.4, 10000, 0.01);
+% TW(2).type = 'envelope';
+% TW(2).envNumCycles = TW2.envNumCycles;
+% TW(2).envFrequency = TW2.envFrequency;
+% TW(2).envPulseWidth = TW2.envPulseWidth;
 % Specify TX structure array.
 TX(1).waveform = 1; % use 1st TW structure.
 TX(1).focus = 0;
@@ -70,7 +74,13 @@ TX(1).Apod = zeros([1,Resource.Parameters.rx_channel]);
 TX(1).Apod(tx_channel)=1;
 TX(1).Delay = computeTXDelays(TX(1));
 
-TPC(1).hv = 6;%Vpp;
+% TX(2).waveform = 2; % use 1st TW structure.
+% TX(2).focus = 0;
+% TX(2).Apod = zeros([1,Resource.Parameters.rx_channel]);
+% TX(2).Apod(tx_channel)=1;
+% TX(2).Delay = computeTXDelays(TX(2));
+
+TPC(1).hv = Vpp;
 
 % Specify TGC Waveform structure.
 TGC(1).CntrlPts = ones(1,8)*0;
@@ -116,8 +126,10 @@ Process(1).Parameters = {'srcbuffer','receive',... % name of buffer to process.
 
 SeqControl(1).command = 'timeToNextAcq';
 SeqControl(1).argument = 1/(frame_rate)*1e6; % wait time in microseconds
+
 SeqControl(2).command = 'jump';
-SeqControl(2).argument = 1;
+SeqControl(2).condition = 'exitAfterJump';
+SeqControl(2).argument = 2*Resource.RcvBuffer(1).numFrames+1;
 nsc = 3; % start index for new SeqControl
 
 n = 1; % start index for Events
@@ -131,6 +143,27 @@ for i = 1:Resource.RcvBuffer(1).numFrames
     SeqControl(nsc).command = 'transferToHost';
     nsc = nsc + 1;
     n = n+1;
+    
+    Event(n).info = 'Call external Processing function.';
+    Event(n).tx = 0; % no TX structure.
+    Event(n).rcv = 0; % no Rcv structure.
+    Event(n).recon = 0; % no reconstruction.
+    Event(n).process = 1; % call processing function
+    Event(n).seqControl = 0;
+    n = n+1;
+end
+
+for i = 1:Resource.RcvBuffer(1).numFrames
+    Event(n).info = 'Acquire RF Data.';
+    Event(n).tx = 1; % use 1st TX structure.
+    Event(n).rcv = i; % use unique Receive for each frame.
+    Event(n).recon = 0; % no reconstruction.
+    Event(n).process = 0; % no processing
+    Event(n).seqControl = [1,nsc]; % set TTNA time and transfer
+    SeqControl(nsc).command = 'transferToHost';
+    nsc = nsc + 1;
+    n = n+1;
+    
     Event(n).info = 'Call external Processing function.';
     Event(n).tx = 0; % no TX structure.
     Event(n).rcv = 0; % no Rcv structure.
