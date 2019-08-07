@@ -101,7 +101,7 @@ Apod([Resource.Parameters.tx_channel,Resource.Parameters.rx_channel])=1;
 Receive = repmat(struct(...
     'Apod', Apod, ... 
     'startDepth', 0, ...
-    'endDepth', endDepth, ...
+    'endDepth', ceil(desiredDepth*1e-3/(Resource.Parameters.speedOfSound/(centerFrequency*1e6))), ...
     'TGC', 1, ...
     'mode', 0, ...
     'bufnum', 1, ...
@@ -115,11 +115,9 @@ Receive = repmat(struct(...
 
 % - Set event specific Receive attributes.
 for i = 1:Resource.RcvBuffer(1).numFrames
-Receive(i).framenum = i;
+    Receive(i).framenum = i;
 end
-% Size of each acquisition segment in samples 
-%n = 2*(Receive(1).endDepth-Receive(1).startDepth)*Receive(1).samplesPerWave;
-%disp(n);
+
 % Specify an external processing event.
 Process(1).classname = 'External';
 Process(1).method = 'myExternFunction';
@@ -173,6 +171,19 @@ for i = 1:Resource.RcvBuffer(1).numFrames
     Event(n).process = 2; % call processing function
     Event(n).seqControl = 0;
     n = n+1;
+
+            Event(n).info = 'Wait';
+        Event(n).tx = 0; 
+        Event(n).rcv = 0;
+        Event(n).recon = 0;
+        Event(n).process = 0;
+        Event(n).seqControl = nsc;
+            SeqControl(nsc).command = 'noop';
+            SeqControl(nsc).argument = (positionerDelay*1e-3)/200e-9;
+            SeqControl(nsc).condition = 'Hw&Sw';
+            nsc = nsc+1;
+        n = n+1;
+
 end
 
 for i = 1:Resource.RcvBuffer(1).numFrames

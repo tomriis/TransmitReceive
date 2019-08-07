@@ -1,13 +1,8 @@
-clear all; close all; clc;
-
-%[lib,axis,locs] = verasonics2dScan(1,-15,15,n_frames);
-Dimensions = [1 2];
-[lib,axis,LOCS1,LOCS2] = verasonics2dScan(Dimensions,[0,30]',[1,31]',[2,2]);
-positions = get_positions(LOCS1, LOCS2); 
+clear all
 %% User defined Scan Parameters
 NA = 1;
-nFrames = length(LOCS1(:));
-positionerDelay = 1000; % Positioner delay in ms
+nFrames = 4;
+positionerDelay = 100; % Positioner delay in ms
 frame_rate = 5;
 centerFrequency = 0.5; % Frequency in MHz
 num_half_cycles = 200; % Number of half cycles to use in each pulse
@@ -15,35 +10,40 @@ desiredDepth = 100; % Desired depth in mm
 endDepth = desiredDepth;
 rx_channel = 100;
 tx_channel = 1;
-Vpp = 7;
+Vpp =20;
 
+Dimensions = [1 2];
+[lib,axis,LOCS1,LOCS2] = verasonics2dScan(Dimensions,[0,30]',[1,31]',[2,2]);
+positions = get_positions(LOCS1, LOCS2);
 %% Setup System
 % Since there are often long pauses after moving the positioner
 % set a high timeout value for the verasonics DMA system
 Resource.VDAS.dmaTimeout = 10000;
+%openSoniq(lib);
+calllib (lib,'OpenSoniqConnection','localhost');
 set_oscope_parameters(lib)
+Resource.Parameters.soniqLib = lib;
 % Specify system parameters
 Resource.Parameters.numTransmit = tx_channel; % no. of transmit channels
 Resource.Parameters.numRcvChannels = rx_channel; % change to 64 for Vantage 64 system
 Resource.Parameters.connector = 1; % trans. connector to use (V 256). Use 0 for 129-256
 Resource.Parameters.speedOfSound = 1540; % speed of sound in m/sec
-Resource.Parameters.soniqLib = lib;
 Resource.Parameters.Axis = axis;
+Resource.Parameters.numAvg = NA;
 Resource.Parameters.LOCS1 = LOCS1;
 Resource.Parameters.LOCS2 = LOCS2;
-Resource.Parameters.numAvg = NA;
 Resource.Parameters.rx_channel = rx_channel;
 Resource.Parameters.tx_channel = tx_channel;
-Resource.Parameters.positions = positions;
 Resource.Parameters.filename = 'C:\Users\Verasonics\Documents\VerasonicsScanFiles\verasonics_scan';
 Resource.Parameters.current_index = 1;
+%Resource.Parameters.simulateMode = 1; % runs script in simulate mode
 
-% Resource.Parameters.simulateMode = 1; % runs script in simulate mode
 RcvProfile.AntiAliasCutoff = 10; %allowed values are 5, 10, 15, 20, and 30
 %RcvProfile.PgaHPF = 80; %enables the integrator feedback path, 0 disables
 %RcvProfile.LnaHPF = 50; % (200, 150,100,50) 200 KHz, 150 KHz, 100 KHz and 50 KHz respectively. 
 
 % Specify Transmit waveform structure.
+
 % Specify media points
 Media.MP(1,:) = [0,0,100,1.0]; % [x, y, z, reflectivity]
 
@@ -72,13 +72,23 @@ Resource.RcvBuffer(1).numFrames = nFrames; % minimum size is 1 frame.
 % Specify Transmit waveform structure.
 TW(1).type = 'parametric';
 TW(1).Parameters = [centerFrequency,0.67,num_half_cycles,1]; % A, B, C, D
-
+%TW2 = waveform_parameters_to_envelope(5e6, 0.4, 10000, 0.01);
+% TW(2).type = 'envelope';
+% TW(2).envNumCycles = TW2.envNumCycles;
+% TW(2).envFrequency = TW2.envFrequency;
+% TW(2).envPulseWidth = TW2.envPulseWidth;
 % Specify TX structure array.
 TX(1).waveform = 1; % use 1st TW structure.
 TX(1).focus = 0;
 TX(1).Apod = zeros([1,Resource.Parameters.rx_channel]);
 TX(1).Apod(tx_channel)=1;
 TX(1).Delay = computeTXDelays(TX(1));
+
+% TX(2).waveform = 2; % use 1st TW structure.
+% TX(2).focus = 0;
+% TX(2).Apod = zeros([1,Resource.Parameters.rx_channel]);
+% TX(2).Apod(tx_channel)=1;
+% TX(2).Delay = computeTXDelays(TX(2));
 
 TPC(1).hv = Vpp;
 
@@ -89,113 +99,103 @@ TGC(1).Waveform = computeTGCWaveform(TGC);
 
 % Specify Receive structure array -
 Apod = zeros([1,Resource.Parameters.rx_channel]); % if 64ch Vantage, = [ones(1,64) zeros(1,64)];
-Apod([Resource.Parameters.tx_channel, Resource.Parameters.rx_channel])=1;
+Apod([Resource.Parameters.tx_channel,Resource.Parameters.rx_channel])=1;
 
-firstReceive.Apod = Apod;
-firstReceive.startDepth = 0;
-% Use user supplied depth to set the depth in wavelengths
-firstReceive.endDepth = ceil(desiredDepth*1e-3/(Resource.Parameters.speedOfSound/(centerFrequency*1e6)));
-firstReceive.TGC = 1; % Use the first TGC waveform defined above
-firstReceive.mode = 0;
-firstReceive.bufnum = 1;
-firstReceive.framenum = 1;
-firstReceive.acqNum = 1;
-firstReceive.sampleMode = 'custom';
-firstReceive.decimSampleRate = 50*Trans.frequency;
-firstReceive.LowPassCoef = [+0.00000 +0.00000 +0.00000 +0.00000 +0.00000 +0.00000...
- +0.00000 +0.00000 +0.00000 +0.00000 +0.00000 +1.00000];
-firstReceive.InputFilter = [];
+% Specify Receive structure array -
+Receive = repmat(struct(...
+    'Apod', Apod, ... 
+    'startDepth', 0, ...
+    'endDepth', ceil(desiredDepth*1e-3/(Resource.Parameters.speedOfSound/(centerFrequency*1e6))), ...
+    'TGC', 1, ...
+    'mode', 0, ...
+    'bufnum', 1, ...
+    'framenum', 1, ...
+    'acqNum', 1, ...
+    'sampleMode', 'custom', ...
+    'decimSampleRate', 50*Trans.frequency,...
+    'LowPassCoef',[],...
+    'InputFilter',[]),...
+    1,Resource.RcvBuffer(1).numFrames);
 
-for ii = 1:nFrames
-    for jj = 1:NA
-        idx = (ii-1)*NA+jj;
-        Receive(idx) = firstReceive;
-        Receive(idx).acqNum = jj;
-        Receive(idx).framenum = ii;
-    end
+% - Set event specific Receive attributes.
+for i = 1:Resource.RcvBuffer(1).numFrames
+    Receive(i).framenum = i;
 end
 
 % Specify an external processing event.
 Process(1).classname = 'External';
-Process(1).method = 'continueScan2d';
+Process(1).method = 'myExternFunction';
 Process(1).Parameters = {'srcbuffer','receive',... % name of buffer to process.
 'srcbufnum',1,...
 'srcframenum',-1,...
 'dstbuffer','none'};
 
 Process(2).classname = 'External';
-Process(2).method = 'show1dScan';
+Process(2).method = 'extern_get_soniq_waveform';
 Process(2).Parameters = {'srcbuffer','receive',... % name of buffer to process.
 'srcbufnum',1,...
-'srcframenum',0,...
+'srcframenum',-1,...
 'dstbuffer','none'};
 
 Process(3).classname = 'External';
-Process(3).method = 'extern_get_soniq_waveform';
+Process(3).method = 'continueScan2d';
 Process(3).Parameters = {'srcbuffer','receive',... % name of buffer to process.
 'srcbufnum',1,...
 'srcframenum',-1,...
 'dstbuffer','none'};
 
-n = 1;
-nsc = 1;
+SeqControl(1).command = 'timeToNextAcq';
+SeqControl(1).argument = 1/(frame_rate)*1e6; % wait time in microseconds
 
-firstEvent.info = 'Acquire RF Data.';
-firstEvent.tx = 1; % use 1st TX structure.
-firstEvent.rcv = 1; % use 1st Rcv structure.
-firstEvent.recon = 0; % no reconstruction.
-firstEvent.process = 0; % no processing
-firstEvent.seqControl = [1,2];
+SeqControl(2).command = 'jump';
+SeqControl(2).condition = 'exitAfterJump';
+SeqControl(2).argument = 2*Resource.RcvBuffer(1).numFrames+1;
+
+SeqControl(3).command = 'triggerOut';
+
+nsc = 4; % start index for new SeqControl
+
+n = 1; % start index for Events
+for i = 1:Resource.RcvBuffer(1).numFrames
+    Event(n).info = 'Acquire RF Data.';
+    Event(n).tx = 1; % use 1st TX structure.
+    Event(n).rcv = i; % use unique Receive for each frame.
+    Event(n).recon = 0; % no reconstruction.
+    Event(n).process = 0; % no processing
+    Event(n).seqControl = [1,3,nsc]; % set TTNA time and transfer
+    SeqControl(nsc).command = 'transferToHost';
+    nsc = nsc + 1;
+    n = n+1;
     
-SeqControl(nsc).command = 'timeToNextAcq';
-SeqControl(nsc).argument = (1/frame_rate)*1e6;
-nsc = nsc+1;
-SeqControl(nsc).command = 'triggerOut';
-nsc = nsc+1;
-
-for ii = 1:nFrames
-    for jj = 1:NA
-        idx = (ii-1)*NA+jj;
-        Event(n) = firstEvent;
-        Event(n).rcv = idx;
-        Event(n).seqControl = [1,2,nsc];
-         SeqControl(nsc).command = 'transferToHost';
-           nsc = nsc + 1;
-        n = n+1;
-        
-        Event(n).info = 'Call external Processing function 2.';
-        Event(n).tx = 0; % no TX structure.
-        Event(n).rcv = 0; % no Rcv structure.
-        Event(n).recon = 0; % no reconstruction.
-        Event(n).process = 3; % call processing function
-        Event(n).seqControl = 0;
-        n = n+1;
-    end
-    if ii < nFrames
-        Event(n).info = 'Sync before moving';
+    Event(n).info = 'Call external Processing function.';
+    Event(n).tx = 0; % no TX structure.
+    Event(n).rcv = 0; % no Rcv structure.
+    Event(n).recon = 0; % no reconstruction.
+    Event(n).process = 1; % call processing function
+    Event(n).seqControl = 0;
+    n = n+1;
+    
+    Event(n).info = 'Call external Processing function 2.';
+    Event(n).tx = 0; % no TX structure.
+    Event(n).rcv = 0; % no Rcv structure.
+    Event(n).recon = 0; % no reconstruction.
+    Event(n).process = 2; % call processing function
+    Event(n).seqControl = 0;
+    n = n+1;
+    
+    Event(n).info = 'Move Positioner.';
         Event(n).tx = 0; 
         Event(n).rcv = 0;
         Event(n).recon = 0;
-        Event(n).process = 0;
-        Event(n).seqControl = nsc; 
-            SeqControl(nsc).command = 'sync';
-            nsc = nsc+1;
-        n = n+1;
-        
-        Event(n).info = 'Move Positioner.';
-        Event(n).tx = 0; 
-        Event(n).rcv = 0;
-        Event(n).recon = 0;
-        Event(n).process = 1;
+        Event(n).process = 3;
         % Need to sync or the verasonics system will acquire data faster 
         % than the positioner moves
-        Event(n).seqControl = nsc; 
-            SeqControl(nsc).command = 'sync';
-            nsc = nsc+1;
+%         Event(n).seqControl = nsc; 
+%             SeqControl(nsc).command = 'sync';
+%             nsc = nsc+1;
         n = n+1;
-             
-        % Set a delay after moving the positioner.
-        Event(n).info = 'Wait';
+
+            Event(n).info = 'Wait';
         Event(n).tx = 0; 
         Event(n).rcv = 0;
         Event(n).recon = 0;
@@ -206,26 +206,15 @@ for ii = 1:nFrames
             SeqControl(nsc).condition = 'Hw&Sw';
             nsc = nsc+1;
         n = n+1;
-    end
+
 end
 
-
-Event(n).info = 'Call external Processing function.';
+Event(n).info = 'Jump back to Event 1.';
 Event(n).tx = 0; % no TX structure.
 Event(n).rcv = 0; % no Rcv structure.
 Event(n).recon = 0; % no reconstruction.
-Event(n).process = 0; % call processing function
-Event(n).seqControl = [nsc,nsc+1,nsc+2]; % wait for data to be transferred
-    SeqControl(nsc).command = 'waitForTransferComplete';
-    SeqControl(nsc).argument = 3;
-    nsc = nsc+1;
-    SeqControl(nsc).command = 'markTransferProcessed';
-    SeqControl(nsc).argument = 3;
-    nsc = nsc+1;
-    SeqControl(nsc).command = 'sync';
-    nsc = nsc+1;
-n = n+1;
-
+Event(n).process = 0; % no processing
+Event(n).seqControl = 2; % jump back to Event 1.
 % Save all the structures to a .mat file.
 svName = 'C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\VerasonicsHydrophone2DScan';
 save(svName);

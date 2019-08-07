@@ -3,9 +3,13 @@ function extern_get_soniq_waveform(RData)
     lib = Resource.Parameters.soniqLib;
     save_location = Resource.Parameters.filename;
     current_index = Resource.Parameters.current_index;
-
-    filename_snq = [save_location,num2str(current_index),'.snq'];
-    filename_mat = [save_location,num2str(current_index),'.mat'];
+    
+    curPos1 = getPosition(Resource.Parameters.soniqLib, Resource.Parameters.Axis(1));
+    curPos2 = getPosition(Resource.Parameters.soniqLib, Resource.Parameters.Axis(2));
+    name = [save_location,num2str(current_index),'_',num2str(curPos1),'_',num2str(curPos2)];
+    filename_snq = [name,'.snq'];
+    
+    filename_mat = [name,'.mat'];
 
 
     calllib(lib,'SetWaveformAutoscale',1);
