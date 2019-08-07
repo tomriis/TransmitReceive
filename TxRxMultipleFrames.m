@@ -4,19 +4,23 @@ NA = 1;
 nFrames = 10;
 positionerDelay = 1000; % Positioner delay in ms
 frame_rate = 5;
-centerFrequency = 1.1; % Frequency in MHz
+centerFrequency = 0.5; % Frequency in MHz
 num_half_cycles = 200; % Number of half cycles to use in each pulse
 desiredDepth = 100; % Desired depth in mm
 endDepth = desiredDepth;
 rx_channel = 100;
 tx_channel = 1;
-Vpp =40;
+Vpp =20;
 
 %% Setup System
 % Since there are often long pauses after moving the positioner
 % set a high timeout value for the verasonics DMA system
 Resource.VDAS.dmaTimeout = 10000;
-
+lib = loadSoniqLibrary();
+%openSoniq(lib);
+calllib (lib,'OpenSoniqConnection','localhost');
+set_oscope_parameters(lib)
+Resource.Parameters.soniqLib = lib;
 % Specify system parameters
 Resource.Parameters.numTransmit = tx_channel; % no. of transmit channels
 Resource.Parameters.numRcvChannels = rx_channel; % change to 64 for Vantage 64 system
@@ -26,6 +30,8 @@ Resource.Parameters.Axis = axis;
 Resource.Parameters.numAvg = NA;
 Resource.Parameters.rx_channel = rx_channel;
 Resource.Parameters.tx_channel = tx_channel;
+Resource.Parameters.filename = 'C:\Users\Verasonics\Documents\VerasonicsScanFiles\verasonics_scan';
+Resource.Parameters.current_index = 1;
 %Resource.Parameters.simulateMode = 1; % runs script in simulate mode
 
 RcvProfile.AntiAliasCutoff = 10; %allowed values are 5, 10, 15, 20, and 30
@@ -55,7 +61,7 @@ Trans.maxHighVoltage = Vpp;
 
 % Specify Resource buffers.
 Resource.RcvBuffer(1).datatype = 'int16';
-Resource.RcvBuffer(1).rowsPerFrame = NA*2048*10; % this allows for 1/4 maximum range
+Resource.RcvBuffer(1).rowsPerFrame = NA*2048*4; % this allows for 1/4 maximum range
 Resource.RcvBuffer(1).colsPerFrame = Trans.numelements; % change to 256 for V256 system
 Resource.RcvBuffer(1).numFrames = nFrames; % minimum size is 1 frame.
 
@@ -122,7 +128,12 @@ Process(1).Parameters = {'srcbuffer','receive',... % name of buffer to process.
 'srcframenum',-1,...
 'dstbuffer','none'};
 
-
+Process(2).classname = 'External';
+Process(2).method = 'extern_get_soniq_waveform';
+Process(2).Parameters = {'srcbuffer','receive',... % name of buffer to process.
+'srcbufnum',1,...
+'srcframenum',-1,...
+'dstbuffer','none'};
 
 SeqControl(1).command = 'timeToNextAcq';
 SeqControl(1).argument = 1/(frame_rate)*1e6; % wait time in microseconds
@@ -130,7 +141,10 @@ SeqControl(1).argument = 1/(frame_rate)*1e6; % wait time in microseconds
 SeqControl(2).command = 'jump';
 SeqControl(2).condition = 'exitAfterJump';
 SeqControl(2).argument = 2*Resource.RcvBuffer(1).numFrames+1;
-nsc = 3; % start index for new SeqControl
+
+SeqControl(3).command = 'triggerOut';
+
+nsc = 4; % start index for new SeqControl
 
 n = 1; % start index for Events
 for i = 1:Resource.RcvBuffer(1).numFrames
@@ -139,7 +153,7 @@ for i = 1:Resource.RcvBuffer(1).numFrames
     Event(n).rcv = i; % use unique Receive for each frame.
     Event(n).recon = 0; % no reconstruction.
     Event(n).process = 0; % no processing
-    Event(n).seqControl = [1,nsc]; % set TTNA time and transfer
+    Event(n).seqControl = [1,3,nsc]; % set TTNA time and transfer
     SeqControl(nsc).command = 'transferToHost';
     nsc = nsc + 1;
     n = n+1;
@@ -151,6 +165,14 @@ for i = 1:Resource.RcvBuffer(1).numFrames
     Event(n).process = 1; % call processing function
     Event(n).seqControl = 0;
     n = n+1;
+    
+    Event(n).info = 'Call external Processing function 2.';
+    Event(n).tx = 0; % no TX structure.
+    Event(n).rcv = 0; % no Rcv structure.
+    Event(n).recon = 0; % no reconstruction.
+    Event(n).process = 2; % call processing function
+    Event(n).seqControl = 0;
+    n = n+1;
 end
 
 for i = 1:Resource.RcvBuffer(1).numFrames
@@ -159,7 +181,7 @@ for i = 1:Resource.RcvBuffer(1).numFrames
     Event(n).rcv = i; % use unique Receive for each frame.
     Event(n).recon = 0; % no reconstruction.
     Event(n).process = 0; % no processing
-    Event(n).seqControl = [1,nsc]; % set TTNA time and transfer
+    Event(n).seqControl = [1,3,nsc]; % set TTNA time and transfer
     SeqControl(nsc).command = 'transferToHost';
     nsc = nsc + 1;
     n = n+1;

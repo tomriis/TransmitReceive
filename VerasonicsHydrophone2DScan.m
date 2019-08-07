@@ -8,10 +8,10 @@ positions = get_positions(LOCS1, LOCS2);
 NA = 1;
 nFrames = length(LOCS1(:));
 positionerDelay = 1000; % Positioner delay in ms
-prf = 500; % Pulse repitition Frequency in Hz
+frame_rate = 5;
 centerFrequency = 0.5; % Frequency in MHz
-num_half_cycles = 20; % Number of half cycles to use in each pulse
-desiredDepth = 160; % Desired depth in mm
+num_half_cycles = 200; % Number of half cycles to use in each pulse
+desiredDepth = 100; % Desired depth in mm
 endDepth = desiredDepth;
 rx_channel = 100;
 tx_channel = 1;
@@ -21,7 +21,7 @@ Vpp = 7;
 % Since there are often long pauses after moving the positioner
 % set a high timeout value for the verasonics DMA system
 Resource.VDAS.dmaTimeout = 10000;
-
+set_oscope_parameters(lib)
 % Specify system parameters
 Resource.Parameters.numTransmit = tx_channel; % no. of transmit channels
 Resource.Parameters.numRcvChannels = rx_channel; % change to 64 for Vantage 64 system
@@ -37,6 +37,7 @@ Resource.Parameters.tx_channel = tx_channel;
 Resource.Parameters.positions = positions;
 Resource.Parameters.filename = 'C:\Users\Verasonics\Documents\VerasonicsScanFiles\verasonics_scan';
 Resource.Parameters.current_index = 1;
+
 % Resource.Parameters.simulateMode = 1; % runs script in simulate mode
 RcvProfile.AntiAliasCutoff = 10; %allowed values are 5, 10, 15, 20, and 30
 %RcvProfile.PgaHPF = 80; %enables the integrator feedback path, 0 disables
@@ -147,7 +148,7 @@ firstEvent.process = 0; % no processing
 firstEvent.seqControl = [1,2];
     
 SeqControl(nsc).command = 'timeToNextAcq';
-SeqControl(nsc).argument = (1/prf)*1e6;
+SeqControl(nsc).argument = (1/frame_rate)*1e6;
 nsc = nsc+1;
 SeqControl(nsc).command = 'triggerOut';
 nsc = nsc+1;
@@ -160,6 +161,14 @@ for ii = 1:nFrames
         Event(n).seqControl = [1,2,nsc];
          SeqControl(nsc).command = 'transferToHost';
            nsc = nsc + 1;
+        n = n+1;
+        
+        Event(n).info = 'Call external Processing function 2.';
+        Event(n).tx = 0; % no TX structure.
+        Event(n).rcv = 0; % no Rcv structure.
+        Event(n).recon = 0; % no reconstruction.
+        Event(n).process = 3; % call processing function
+        Event(n).seqControl = 0;
         n = n+1;
     end
     if ii < nFrames
@@ -184,7 +193,7 @@ for ii = 1:nFrames
             SeqControl(nsc).command = 'sync';
             nsc = nsc+1;
         n = n+1;
-        
+             
         % Set a delay after moving the positioner.
         Event(n).info = 'Wait';
         Event(n).tx = 0; 
@@ -208,10 +217,10 @@ Event(n).recon = 0; % no reconstruction.
 Event(n).process = 0; % call processing function
 Event(n).seqControl = [nsc,nsc+1,nsc+2]; % wait for data to be transferred
     SeqControl(nsc).command = 'waitForTransferComplete';
-    SeqControl(nsc).argument = 2;
+    SeqControl(nsc).argument = 3;
     nsc = nsc+1;
     SeqControl(nsc).command = 'markTransferProcessed';
-    SeqControl(nsc).argument = 2;
+    SeqControl(nsc).argument = 3;
     nsc = nsc+1;
     SeqControl(nsc).command = 'sync';
     nsc = nsc+1;
