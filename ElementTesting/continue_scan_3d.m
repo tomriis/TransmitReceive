@@ -19,11 +19,14 @@ function continue_scan_3d(RData)
     % Move to the next position
     axis = Resource.Parameters.Axis;
     soniqLib = Resource.Parameters.soniqLib;
-
-    movePositionerAbs(soniqLib, axis(1), positions(next_pos, 1));
-    movePositionerAbs(soniqLib, axis(2), positions(next_pos, 2));
-    movePositionerAbs(soniqLib, axis(3), positions(next_pos, 3));
-
+    if next_pos > length(positions)
+        disp(num2str(next_pos))
+        VsClose;
+    else
+        movePositionerAbs(soniqLib, axis(1), positions(next_pos, 1));
+        movePositionerAbs(soniqLib, axis(2), positions(next_pos, 2));
+        movePositionerAbs(soniqLib, axis(3), positions(next_pos, 3));
+    end
     Resource.Parameters.position_index = next_pos;
     assignin('base','Resource',Resource);
     % pause(Resource.Parameters.positionerDelay/1e3);

@@ -17,7 +17,7 @@ lib = loadSoniqLibrary();
 openSoniq(lib);
 set_oscope_parameters(lib)
 
-[lib,axis,positions] = verasonics_3d_scan([0,30,0],[1,31,0],[2,2,1]);
+[axis,positions] = verasonics_3d_scan(lib, [0,30,2],[1,31,2],[2,2,1]);
 n_positions = length(positions);
 n_frames = frames_per_position * n_positions;
 
@@ -33,13 +33,12 @@ Resource.Parameters.connector = 1; % trans. connector to use (V 256). Use 0 for 
 Resource.Parameters.speedOfSound = 1540; % speed of sound in m/sec
 Resource.Parameters.Axis = axis;
 Resource.Parameters.numAvg = NA;
-Resource.Parameters.LOCS1 = LOCS1;
-Resource.Parameters.LOCS2 = LOCS2;
 Resource.Parameters.rx_channel = rx_channel;
 Resource.Parameters.tx_channel = tx_channel;
-Resource.Parameters.filename = 'C:\Users\Verasonics\Documents\VerasonicsScanFiles\verasonics_scan';
+Resource.Parameters.filename = 'C:\Users\Verasonics\Documents\VerasonicsScanFiles\wv';
 Resource.Parameters.current_index = 1;
 Resource.Parameters.position_index = 1;
+Resource.Parameters.positions = positions;
 %Resource.Parameters.simulateMode = 1; % runs script in simulate mode
 
 RcvProfile.AntiAliasCutoff = 10; %allowed values are 5, 10, 15, 20, and 30
@@ -215,13 +214,14 @@ for i = 1:n_positions
 
 end
 
-Event(n).info = 'Jump back to Event 1.';
-Event(n).tx = 0; % no TX structure.
-Event(n).rcv = 0; % no Rcv structure.
-Event(n).recon = 0; % no reconstruction.
-Event(n).process = 0; % no processing
-Event(n).seqControl = 2; % jump back to Event 1.
-% Save all the structures to a .mat file.
+    Event(n).info = 'Jump back to Event 1.';
+    Event(n).tx = 0; % no TX structure.
+    Event(n).rcv = 0; % no Rcv structure.
+    Event(n).recon = 0; % no reconstruction.
+    Event(n).process = 0; % no processing
+    Event(n).seqControl = 2; % jump back to Event 1.
+
+%Save all the structures to a .mat file.
 svName = 'C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\VerasonicsHydrophone2DScan';
 save(svName);
 
