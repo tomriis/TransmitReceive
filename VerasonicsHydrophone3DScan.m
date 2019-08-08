@@ -1,7 +1,7 @@
 clear all
 %% User defined Scan Parameters
 NA = 1;
-nFrames = 4;
+frames_per_position = 4;
 positionerDelay = 100; % Positioner delay in ms
 frame_rate = 5;
 centerFrequency = 0.5; % Frequency in MHz
@@ -12,16 +12,19 @@ rx_channel = 100;
 tx_channel = 1;
 Vpp =20;
 
-Dimensions = [1 2];
-[lib,axis,LOCS1,LOCS2] = verasonics2dScan(Dimensions,[0,30]',[1,31]',[2,2]);
-positions = get_positions(LOCS1, LOCS2);
+%% Connect to Soniq
+lib = loadSoniqLibrary();
+openSoniq(lib);
+set_oscope_parameters(lib)
+
+[lib,axis,positions] = verasonics_3d_scan([0,30,0],[1,31,0],[2,2,1]);
+n_positions = length(positions);
+n_frames = frames_per_position * n_positions;
+
 %% Setup System
 % Since there are often long pauses after moving the positioner
 % set a high timeout value for the verasonics DMA system
 Resource.VDAS.dmaTimeout = 10000;
-%openSoniq(lib);
-calllib (lib,'OpenSoniqConnection','localhost');
-set_oscope_parameters(lib)
 Resource.Parameters.soniqLib = lib;
 % Specify system parameters
 Resource.Parameters.numTransmit = tx_channel; % no. of transmit channels
@@ -36,6 +39,7 @@ Resource.Parameters.rx_channel = rx_channel;
 Resource.Parameters.tx_channel = tx_channel;
 Resource.Parameters.filename = 'C:\Users\Verasonics\Documents\VerasonicsScanFiles\verasonics_scan';
 Resource.Parameters.current_index = 1;
+Resource.Parameters.position_index = 1;
 %Resource.Parameters.simulateMode = 1; % runs script in simulate mode
 
 RcvProfile.AntiAliasCutoff = 10; %allowed values are 5, 10, 15, 20, and 30
@@ -67,7 +71,7 @@ Trans.maxHighVoltage = Vpp;
 Resource.RcvBuffer(1).datatype = 'int16';
 Resource.RcvBuffer(1).rowsPerFrame = NA*2048*4; % this allows for 1/4 maximum range
 Resource.RcvBuffer(1).colsPerFrame = Trans.numelements; % change to 256 for V256 system
-Resource.RcvBuffer(1).numFrames = nFrames; % minimum size is 1 frame.
+Resource.RcvBuffer(1).numFrames = n_frames; % minimum size is 1 frame.
 
 % Specify Transmit waveform structure.
 TW(1).type = 'parametric';
@@ -138,7 +142,7 @@ Process(2).Parameters = {'srcbuffer','receive',... % name of buffer to process.
 'dstbuffer','none'};
 
 Process(3).classname = 'External';
-Process(3).method = 'continueScan2d';
+Process(3).method = 'continue_scan_3d';
 Process(3).Parameters = {'srcbuffer','receive',... % name of buffer to process.
 'srcbufnum',1,...
 'srcframenum',-1,...
@@ -156,33 +160,35 @@ SeqControl(3).command = 'triggerOut';
 nsc = 4; % start index for new SeqControl
 
 n = 1; % start index for Events
-for i = 1:Resource.RcvBuffer(1).numFrames
-    Event(n).info = 'Acquire RF Data.';
-    Event(n).tx = 1; % use 1st TX structure.
-    Event(n).rcv = i; % use unique Receive for each frame.
-    Event(n).recon = 0; % no reconstruction.
-    Event(n).process = 0; % no processing
-    Event(n).seqControl = [1,3,nsc]; % set TTNA time and transfer
-    SeqControl(nsc).command = 'transferToHost';
-    nsc = nsc + 1;
-    n = n+1;
-    
-    Event(n).info = 'Call external Processing function.';
-    Event(n).tx = 0; % no TX structure.
-    Event(n).rcv = 0; % no Rcv structure.
-    Event(n).recon = 0; % no reconstruction.
-    Event(n).process = 1; % call processing function
-    Event(n).seqControl = 0;
-    n = n+1;
-    
-    Event(n).info = 'Call external Processing function 2.';
-    Event(n).tx = 0; % no TX structure.
-    Event(n).rcv = 0; % no Rcv structure.
-    Event(n).recon = 0; % no reconstruction.
-    Event(n).process = 2; % call processing function
-    Event(n).seqControl = 0;
-    n = n+1;
-    
+for i = 1:n_positions
+    for j = 1:frames_per_position
+        idx = (i-1)*frames_per_position+j;
+        Event(n).info = 'Acquire RF Data.';
+        Event(n).tx = 1; % use 1st TX structure.
+        Event(n).rcv = idx; % use unique Receive for each frame.
+        Event(n).recon = 0; % no reconstruction.
+        Event(n).process = 0; % no processing
+        Event(n).seqControl = [1,3,nsc]; % set TTNA time and transfer
+        SeqControl(nsc).command = 'transferToHost';
+        nsc = nsc + 1;
+        n = n+1;
+
+        Event(n).info = 'Call external Processing function.';
+        Event(n).tx = 0; % no TX structure.
+        Event(n).rcv = 0; % no Rcv structure.
+        Event(n).recon = 0; % no reconstruction.
+        Event(n).process = 1; % call processing function
+        Event(n).seqControl = 0;
+        n = n+1;
+
+        Event(n).info = 'Call external Processing function 2.';
+        Event(n).tx = 0; % no TX structure.
+        Event(n).rcv = 0; % no Rcv structure.
+        Event(n).recon = 0; % no reconstruction.
+        Event(n).process = 2; % call processing function
+        Event(n).seqControl = 0;
+        n = n+1;
+    end
     Event(n).info = 'Move Positioner.';
         Event(n).tx = 0; 
         Event(n).rcv = 0;
