@@ -23,6 +23,7 @@ function continue_scan_3d(RData)
         movePositionerAbs(soniqLib, axis(1), positions(next_pos, 1));
         movePositionerAbs(soniqLib, axis(2), positions(next_pos, 2));
         movePositionerAbs(soniqLib, axis(3), positions(next_pos, 3));
+        disp(['Position ', num2str(next_pos),' of ', num2str(length(positions))]);
     end
     
     Resource.Parameters.position_index = next_pos;

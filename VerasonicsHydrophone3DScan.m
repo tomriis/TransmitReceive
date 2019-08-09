@@ -1,11 +1,12 @@
-clear all
-output_file_base_name = 'C:\Users\Verasonics\Documents\VerasonicsScanFiles\wv';
+function VerasonicsHydrophone3DScan(freq)
+evalin('base','clear');
+output_file_base_name = ['C:\Users\Verasonics\Documents\VerasonicsScanFiles\el_',num2str(freq),'_'];
 %% User defined Scan Parameters
 NA = 1;
 frames_per_position = 4;
 positionerDelay = 100; % Positioner delay in ms
-frame_rate = 5;
-centerFrequency = 0.5; % Frequency in MHz
+frame_rate = 10;
+centerFrequency = freq/1e6; % Frequency in MHz
 num_half_cycles = 200; % Number of half cycles to use in each pulse
 desiredDepth = 100; % Desired depth in mm
 endDepth = desiredDepth;
@@ -18,7 +19,7 @@ lib = loadSoniqLibrary();
 openSoniq(lib);
 set_oscope_parameters(lib)
 
-[axis,positions] = verasonics_3d_scan(lib, [0,30,2],[1,31,2],[2,2,1]);
+[axis,positions] = verasonics_3d_scan(lib, [-25,-2,2],[25,2,2],[250,4,1]);
 n_positions = length(positions);
 n_frames = frames_per_position * n_positions;
 
@@ -73,6 +74,8 @@ TX(1).waveform = 1; % use 1st TW structure.
 TX(1).focus = 0;
 TX(1).Apod = zeros([1,Resource.Parameters.rx_channel]);
 TX(1).Apod(tx_channel)=1;
+assignin('base','Trans',Trans);
+assignin('base','Resource',Resource);
 TX(1).Delay = computeTXDelays(TX(1));
 
 TPC(1).hv = Vpp;
@@ -198,9 +201,10 @@ Event(n).recon = 0;
 Event(n).process = 0; 
 Event(n).seqControl = 2;
 
-svName = 'C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\VerasonicsHydrophone2DScan';
-save(svName);
+filename = 'C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\VerasonicsHydrophone3DScan';
 
-filename = svName;
-VSX
-return
+ws = [filename, '.mat'];
+save(filename);
+evalin('base', 'load(''C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\VerasonicsHydrophone3DScan.mat'')');
+evalin('base','VSX');
+end
