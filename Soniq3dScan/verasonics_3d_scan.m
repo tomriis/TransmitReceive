@@ -1,28 +1,16 @@
-% verasonics3dScan sets up the nessecary parameters to do a 1 dimensional
-% scan on the verasonics system. Inputs are optional - if none are provided
-% then the user will be prompted for the relevant parameters. If some are
-% provided all must be provided
-% 
 % @INPUTS
-%   axis: a 2 x 1 vector specifying the axes along which to do the scan
-%      (0:left/right,1:front/back,2:up/down)
-%   sl: a 2 x 1 vector of start locations (in absolute coordinates)
-%   el: a 2 x 1 vector of end location (in absolute coordinates)
-%   np: a 2 x 1 vector of number of points to scan
+%   lib: loaded verasonics library
+%   sl: a 3 x 1 vector of start locations (in absolute coordinates)
+%   el: a 3 x 1 vector of end location (in absolute coordinates)
+%   np: a 3 x 1 vector of number of points to scan
 % 
 % @OUTPUTS
 %   lib: MATLAB alias of the opened Soniq DLL
 %   axis: axis on which to perform scan
-%   LOCS1: matrix of scan locations for the first axis
-%   LOCS2: matrix of scan locations for the third axis
+%   positions: N x 3 matrix of scan positions 
 
 function [axis,positions] = verasonics_3d_scan(lib, sl,el,np)
     axis = [1 2 0];
-    if nargin ~= 4 && nargin ~= 0
-        error('Must provide all four grid parameters or none!')
-    end
-
-    % User already supplied input - error check it
     for ii = 1:3
         if ~withinLimits(lib,axis(ii),sl(ii))
             error(['Start location ', num2str(ii), ' is outside of limits!'])
@@ -32,7 +20,6 @@ function [axis,positions] = verasonics_3d_scan(lib, sl,el,np)
         end
     end
 
-    %% Set up grid
     locs1 = linspace(sl(1),el(1),np(1));
     locs2 = linspace(sl(2),el(2),np(2));
     locs3 = linspace(sl(3),el(3),np(3));

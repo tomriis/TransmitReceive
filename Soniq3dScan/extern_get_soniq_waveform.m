@@ -10,13 +10,10 @@ function extern_get_soniq_waveform(RData)
     
     name = [save_location,num2str(current_index),'_',num2str(x),'_',num2str(y),'_',num2str(z)];
     filename_snq = [name,'.snq'];
-    
     filename_mat = [name,'.mat'];
-
 
     calllib(lib,'SetWaveformAutoscale',1);
     calllib(lib,'DigitizeWaveform');
-
     calllib(lib,'SaveFileAs',filename_snq);
 
     [t,wv] = readWaveform(filename_snq);
