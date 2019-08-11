@@ -1,25 +1,33 @@
-function VerasonicsHydrophone3DScan(freq)
+function LinearArray3DScan(varargin)
 evalin('base','clear');
-output_file_base_name = ['C:\Users\Verasonics\Documents\VerasonicsScanFiles\el_',num2str(freq),'_'];
+
+p = inputParser;
+addOptional(p, 'target_position', [0 28]);
+addOptional(p, 'imaging_freq', 8.5);
+addOptional(p, 'stim_freq', 8.5);
+addOptional(p, 'duty_cycle', 100);
+addOptional(p, 'duration', 0.0005);
+addOptional(p, 'prf',10000);
+
+parse(p, varargin{:})
+evalin('base','clear');
+output_file_base_name = ['C:\Users\Verasonics\Documents\VerasonicsScanFiles\el_'];
 %% User defined Scan Parameters
 NA = 1;
 frames_per_position = 4;
 positionerDelay = 100; % Positioner delay in ms
 frame_rate = 10;
-centerFrequency = freq/1e6; % Frequency in MHz
-num_half_cycles = 200; % Number of half cycles to use in each pulse
-desiredDepth = 100; % Desired depth in mm
-endDepth = desiredDepth;
-rx_channel = 100;
-tx_channel = 1;
-Vpp =15;
 
+transmit_channels = 128;% Trans.numelements;
+receive_channels = 128;%Trans.numelements;
+imaging_prf = 10000; % 'timeToNextAcq' argument [microseconds] 
+V_amplitude = 3;
 %% Connect to Soniq
 lib = loadSoniqLibrary();
 openSoniq(lib);
 set_oscope_parameters(lib)
 
-[axis,positions] = verasonics_3d_scan(lib, [-40,1,1],[60,55,85],[250,4,1]);
+[axis,positions] = verasonics_3d_scan(lib, [-30,1,1],[50,55,85],[100,7,1]);
 n_positions = length(positions);
 n_frames = frames_per_position * n_positions;
 
@@ -27,84 +35,93 @@ n_frames = frames_per_position * n_positions;
 % Since there are often long pauses after moving the positioner
 % set a high timeout value for the verasonics DMA system
 Resource.VDAS.dmaTimeout = 10000;
+% Stim Resource parameters
+Resource.parameters.target_position = p.Results.target_position;
+Resource.parameters.imaging_freq = p.Results.imaging_freq;
+Resource.parameters.stim_freq = p.Results.stim_freq;
+Resource.parameters.duty_cycle = p.Results.duty_cycle;
+Resource.parameters.duration = p.Results.duration;
+Resource.parameters.prf = p.Results.prf;
 
-Resource.Parameters.soniqLib = lib;
-Resource.Parameters.numTransmit = tx_channel; 
-Resource.Parameters.numRcvChannels = rx_channel; 
-Resource.Parameters.connector = 1; 
+% Movement parameters
+Resource.Parameters.soniqLib = lib; 
+Resource.Parameters.numTransmit = transmit_channels;
+Resource.Parameters.numRcvChannels = receive_channels;
+Resource.Parameters.connector = 0;
 Resource.Parameters.speedOfSound = 1540; % m/s
 Resource.Parameters.Axis = axis;
 Resource.Parameters.numAvg = NA;
-Resource.Parameters.rx_channel = rx_channel;
-Resource.Parameters.tx_channel = tx_channel;
 Resource.Parameters.filename = output_file_base_name;
 Resource.Parameters.positions = positions;
 Resource.Parameters.current_index = 1;
 Resource.Parameters.position_index = 1;
-%Resource.Parameters.simulateMode = 1; % runs script in simulate mode
+Resource.Parameters.simulateMode = 0; % runs script with hardware
+startDepth = 5;
+endDepth = 200;
 %Media.MP(1,:) = [0,0,100,1.0]; % [x, y, z, reflectivity]
 RcvProfile.AntiAliasCutoff = 10; %allowed values are 5, 10, 15, 20, and 30
 %RcvProfile.PgaHPF = 80; %enables the integrator feedback path, 0 disables
 %RcvProfile.LnaHPF = 50; % (200, 150,100,50) 200 KHz, 150 KHz, 100 KHz and 50 KHz respectively. 
 
-Trans.name = 'Custom';
-Trans.frequency = centerFrequency; % Lowest transmit frequency is 0.6345 Pg. 60
+HVmux_script = 1;
+aperture_num = 64;
+Trans.name = 'L12-5 50mm';%'L12-5 38mm'; % 'L11-4v';
 Trans.units = 'mm';
-Trans.lensCorrection = 1;
-%Trans.Bandwidth = [0,3]; % Set to 0.6 of center frequency by default
-Trans.type = 0;
-Trans.numelements = Resource.Parameters.rx_channel;
-Trans.elementWidth = 24;
-Trans.ElementPos = ones(Resource.Parameters.rx_channel,5);
-Trans.ElementSens = ones(101,1);
-Trans.connType = 1;
-Trans.Connector = (1:Trans.numelements)';
-Trans.impedance = 50;
-Trans.maxHighVoltage = Vpp;
+Trans.frequency = Resource.parameters.imaging_freq; % not needed if using default center frequency
+Trans = computeTrans(Trans);
 
 Resource.RcvBuffer(1).datatype = 'int16';
-Resource.RcvBuffer(1).rowsPerFrame = NA*2048*4; % this allows for 1/4 maximum range
+Resource.RcvBuffer(1).rowsPerFrame = 4096; % this allows for 1/4 maximum range
 Resource.RcvBuffer(1).colsPerFrame = Trans.numelements; % change to 256 for V256 system
 Resource.RcvBuffer(1).numFrames = n_frames; % minimum size is 1 frame.
 
+% Specify Transmit waveform structure for imaging.
 TW(1).type = 'parametric';
-TW(1).Parameters = [centerFrequency,0.67,num_half_cycles,1]; % A, B, C, D
-
+TW(1).Parameters = [Resource.parameters.imaging_freq,0.67,2,1]; % A, B, C, D
+% Specify TX structure array.
 TX(1).waveform = 1; % use 1st TW structure.
 TX(1).focus = 0;
-TX(1).Apod = zeros([1,Resource.Parameters.rx_channel]);
-TX(1).Apod(tx_channel)=1;
+TX(1).Apod = ones(1,transmit_channels);
+if HVmux_script
+    TX(1).aperture = aperture_num;
+end
 assignin('base','Trans',Trans);
 assignin('base','Resource',Resource);
+
 TX(1).Delay = computeTXDelays(TX(1));
+%Specify Transmit waveform structure for stimulation
+TPC(1).hv = V_amplitude;
+TPC(1).highVoltageLimit = 15;
+TPC(2).hv = V_amplitude;
 
-TPC(1).hv = Vpp;
-
-TGC(1).CntrlPts = ones(1,8)*0;
-TGC(1).rangeMax = 1;
+% Specify TGC Waveform structure.
+TGC(1).CntrlPts = [300,450,575,675,750,800,850,900];
+TGC(1).rangeMax = 200;
 TGC(1).Waveform = computeTGCWaveform(TGC);
-
-Apod = zeros([1,Resource.Parameters.rx_channel]); 
-Apod([Resource.Parameters.tx_channel,Resource.Parameters.rx_channel])=1;
-
+% Specify Receive structure array -
 Receive = repmat(struct(...
-    'Apod', Apod, ... 
-    'startDepth', 0, ...
-    'endDepth', ceil(desiredDepth*1e-3/(Resource.Parameters.speedOfSound/(centerFrequency*1e6))), ...
-    'TGC', 1, ...
-    'mode', 0, ...
-    'bufnum', 1, ...
-    'framenum', 1, ...
-    'acqNum', 1, ...
-    'sampleMode', 'custom', ...
-    'decimSampleRate', 50*Trans.frequency,...
-    'LowPassCoef',[],...
-    'InputFilter',[]),...
-    1,Resource.RcvBuffer(1).numFrames);
+'Apod', zeros(1, receive_channels), ...
+'startDepth', 0, ...
+'endDepth', 200, ...
+'TGC', 1, ...
+'mode', 0, ...
+'bufnum', 1, ...
+'framenum', 1, ...
+'acqNum', 1, ...
+'sampleMode', 'NS200BW', ...
+'LowPassCoef',[],...
+'InputFilter',[]),...
+1,Resource.RcvBuffer(1).numFrames);
+% - Set event specific Receive attributes.
 
 for i = 1:Resource.RcvBuffer(1).numFrames
+    Receive(i).Apod = ones(1, receive_channels);
     Receive(i).framenum = i;
+    if HVmux_script
+        Receive(i).aperture = aperture_num;
+    end
 end
+
 
 %% Event and Process Code
 
@@ -142,24 +159,17 @@ nsc = 4; % start index for new SeqControl
 n = 1;
 for i = 1:n_positions
     for j = 1:frames_per_position
-        idx = (i-1)*frames_per_position+j;
-        Event(n).info = 'Acquire RF Data.';
-        Event(n).tx = 1; 
-        Event(n).rcv = idx; 
-        Event(n).recon = 0; 
-        Event(n).process = 0; 
-        Event(n).seqControl = [1,3,nsc]; 
-        SeqControl(nsc).command = 'transferToHost';
-        nsc = nsc + 1;
-        n = n+1;
-
-        Event(n).info = 'Call external Processing function 1.';
-        Event(n).tx = 0;
-        Event(n).rcv = 0; 
-        Event(n).recon = 0; 
-        Event(n).process = 1; 
-        Event(n).seqControl = 0;
-        n = n+1;
+        for k = 1:2%length(Resource.parameters.TW)
+            Event(n).info = 'Acquire RF Data.';
+            Event(n).tx = 1; % use 1st TX structure.
+            Event(n).rcv = 0; % use 1st Rcv structure for frame.
+            Event(n).recon = 0; % no reconstruction.
+            Event(n).process = 0; % no processing
+            if k == 1
+                Event(n).seqControl = [3]; 
+            end
+            n = n+1;
+        end
 
         Event(n).info = 'Call external Processing function 2.';
         Event(n).tx = 0; % no TX structure.
@@ -201,10 +211,10 @@ Event(n).recon = 0;
 Event(n).process = 0; 
 Event(n).seqControl = 2;
 
-filename = 'C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\VerasonicsHydrophone3DScan';
+filename = 'C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\LinearArray3DScan';
 
 ws = [filename, '.mat'];
 save(filename);
-evalin('base', 'load(''C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\VerasonicsHydrophone3DScan.mat'')');
+evalin('base', 'load(''C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\LinearArray3DScan.mat'')');
 evalin('base','VSX');
 end
