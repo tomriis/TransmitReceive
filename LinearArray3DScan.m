@@ -10,7 +10,7 @@ addOptional(p, 'duration', 0.0005);
 addOptional(p, 'prf',10000);
 
 parse(p, varargin{:})
-evalin('base','clear');
+
 output_file_base_name = ['C:\Users\Verasonics\Documents\VerasonicsScanFiles\el_'];
 %% User defined Scan Parameters
 NA = 1;
@@ -67,7 +67,7 @@ HVmux_script = 1;
 aperture_num = 64;
 Trans.name = 'L12-5 50mm';%'L12-5 38mm'; % 'L11-4v';
 Trans.units = 'mm';
-Trans.frequency = Resource.parameters.imaging_freq; % not needed if using default center frequency
+Trans.frequency = Resource.parameters.stim_freq; % not needed if using default center frequency
 Trans = computeTrans(Trans);
 
 Resource.RcvBuffer(1).datatype = 'int16';
@@ -75,28 +75,33 @@ Resource.RcvBuffer(1).rowsPerFrame = 4096; % this allows for 1/4 maximum range
 Resource.RcvBuffer(1).colsPerFrame = Trans.numelements; % change to 256 for V256 system
 Resource.RcvBuffer(1).numFrames = n_frames; % minimum size is 1 frame.
 
-% Specify Transmit waveform structure for imaging.
+% Specify Transmit waveform structure for focusing.
 TW(1).type = 'parametric';
-TW(1).Parameters = [Resource.parameters.imaging_freq,0.67,2,1]; % A, B, C, D
+TW(1).Parameters = [Trans.frequency,.67,50,1];
+
 % Specify TX structure array.
-TX(1).waveform = 1; % use 1st TW structure.
-TX(1).focus = 0;
-TX(1).Apod = ones(1,transmit_channels);
-if HVmux_script
-    TX(1).aperture = aperture_num;
-end
+TX = repmat(struct('waveform', 1, ...
+                   'Origin', [0.0,0.0,0.0], ...
+                   'aperture', aperture_num, ...
+                   'Apod', ones(1,Resource.Parameters.numTransmit), ...
+                   'focus', 0.0, ...
+                   'Steer', [0.0,0.0], ...
+                   'Delay', zeros(1,Resource.Parameters.numTransmit)), 1, 1);
+% % % TX(2).aperture = 65;  % Use the tx aperture that starts at element 65.
+% % % TX(3).aperture = 129; % Use the tx aperture that starts at element 129.
+%TX(1).Delay = delays(Trans.HVMux.ApertureES(:,aperture_num)~=0);
+% Specify TGC Waveform structure.
+TGC.CntrlPts = [234,368,514,609,750,856,1023,1023];
+TGC.rangeMax = 200;
+TGC.Waveform = computeTGCWaveform(TGC);
 assignin('base','Trans',Trans);
 assignin('base','Resource',Resource);
 
-TX(1).Delay = computeTXDelays(TX(1));
-%Specify Transmit waveform structure for stimulation
-TPC(1).hv = V_amplitude;
-TPC(1).highVoltageLimit = 15;
-TPC(2).hv = V_amplitude;
+
 
 % Specify TGC Waveform structure.
 TGC(1).CntrlPts = [300,450,575,675,750,800,850,900];
-TGC(1).rangeMax = 200;
+TGC(1).rangeMax = endDepth;
 TGC(1).Waveform = computeTGCWaveform(TGC);
 % Specify Receive structure array -
 Receive = repmat(struct(...
@@ -159,7 +164,7 @@ nsc = 4; % start index for new SeqControl
 n = 1;
 for i = 1:n_positions
     for j = 1:frames_per_position
-        for k = 1:2%length(Resource.parameters.TW)
+        for k = 1:4%length(Resource.parameters.TW)
             Event(n).info = 'Acquire RF Data.';
             Event(n).tx = 1; % use 1st TX structure.
             Event(n).rcv = 0; % use 1st Rcv structure for frame.
