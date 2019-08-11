@@ -2,6 +2,8 @@ function LinearArray3DScan(varargin)
 evalin('base','clear');
 
 p = inputParser;
+addRequired(p, 'positions');
+addRequired(p, 'lib');
 addOptional(p, 'target_position', [0 28]);
 addOptional(p, 'imaging_freq', 8.5);
 addOptional(p, 'stim_freq', 8.5);
@@ -23,11 +25,10 @@ receive_channels = 128;%Trans.numelements;
 imaging_prf = 10000; % 'timeToNextAcq' argument [microseconds] 
 V_amplitude = 3;
 %% Connect to Soniq
-lib = loadSoniqLibrary();
-openSoniq(lib);
-set_oscope_parameters(lib)
 
-[axis,positions] = verasonics_3d_scan(lib, [-30,1,1],[50,55,85],[100,7,1]);
+positions = p.Results.positions;
+lib = p.Results.lib;
+
 n_positions = length(positions);
 n_frames = frames_per_position * n_positions;
 
@@ -49,7 +50,7 @@ Resource.Parameters.numTransmit = transmit_channels;
 Resource.Parameters.numRcvChannels = receive_channels;
 Resource.Parameters.connector = 0;
 Resource.Parameters.speedOfSound = 1540; % m/s
-Resource.Parameters.Axis = axis;
+Resource.Parameters.Axis = [1,2,0];
 Resource.Parameters.numAvg = NA;
 Resource.Parameters.filename = output_file_base_name;
 Resource.Parameters.positions = positions;
@@ -89,7 +90,10 @@ TX = repmat(struct('waveform', 1, ...
                    'Delay', zeros(1,Resource.Parameters.numTransmit)), 1, 1);
 % % % TX(2).aperture = 65;  % Use the tx aperture that starts at element 65.
 % % % TX(3).aperture = 129; % Use the tx aperture that starts at element 129.
-%TX(1).Delay = delays(Trans.HVMux.ApertureES(:,aperture_num)~=0);
+delays = compute_linear_array_delays(Trans.ElementPos,...,
+    Resource.parameters.target_position,...,
+    Resource.Parameters.speedOfSound*1000);
+TX(1).Delay = delays(Trans.HVMux.ApertureES(:,aperture_num)~=0);
 % Specify TGC Waveform structure.
 TGC.CntrlPts = [234,368,514,609,750,856,1023,1023];
 TGC.rangeMax = 200;
@@ -164,7 +168,7 @@ nsc = 4; % start index for new SeqControl
 n = 1;
 for i = 1:n_positions
     for j = 1:frames_per_position
-        for k = 1:4%length(Resource.parameters.TW)
+        for k = 1:1%length(Resource.parameters.TW)
             Event(n).info = 'Acquire RF Data.';
             Event(n).tx = 1; % use 1st TX structure.
             Event(n).rcv = 0; % use 1st Rcv structure for frame.
