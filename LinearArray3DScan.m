@@ -4,7 +4,8 @@ evalin('base','clear');
 p = inputParser;
 addRequired(p, 'positions');
 addRequired(p, 'lib');
-addOptional(p, 'target_position', [0 28]);
+addOptional(p, 'target_position', [0 25]);
+addOptional(p, 'file_name', 'C:\Users\Verasonics\Documents\VerasonicsScanFiles\el_');
 addOptional(p, 'imaging_freq', 8.5);
 addOptional(p, 'stim_freq', 8.5);
 addOptional(p, 'duty_cycle', 100);
@@ -13,11 +14,11 @@ addOptional(p, 'prf',10000);
 
 parse(p, varargin{:})
 
-output_file_base_name = ['C:\Users\Verasonics\Documents\VerasonicsScanFiles\el_'];
+output_file_base_name = p.Results.file_name;
 %% User defined Scan Parameters
 NA = 1;
-frames_per_position = 4;
-positionerDelay = 100; % Positioner delay in ms
+frames_per_position = 1;
+positionerDelay = 150; % Positioner delay in ms
 frame_rate = 10;
 
 transmit_channels = 128;% Trans.numelements;
@@ -37,9 +38,9 @@ n_frames = frames_per_position * n_positions;
 % set a high timeout value for the verasonics DMA system
 Resource.VDAS.dmaTimeout = 10000;
 % Stim Resource parameters
-Resource.parameters.target_position = p.Results.target_position;
+Resource.Parameters.target_position = p.Results.target_position;
 Resource.parameters.imaging_freq = p.Results.imaging_freq;
-Resource.parameters.stim_freq = p.Results.stim_freq;
+Resource.Parameters.stim_freq = p.Results.stim_freq;
 Resource.parameters.duty_cycle = p.Results.duty_cycle;
 Resource.parameters.duration = p.Results.duration;
 Resource.parameters.prf = p.Results.prf;
@@ -68,7 +69,7 @@ HVmux_script = 1;
 aperture_num = 64;
 Trans.name = 'L12-5 50mm';%'L12-5 38mm'; % 'L11-4v';
 Trans.units = 'mm';
-Trans.frequency = Resource.parameters.stim_freq; % not needed if using default center frequency
+Trans.frequency = Resource.Parameters.stim_freq; % not needed if using default center frequency
 Trans = computeTrans(Trans);
 
 Resource.RcvBuffer(1).datatype = 'int16';
@@ -78,7 +79,7 @@ Resource.RcvBuffer(1).numFrames = n_frames; % minimum size is 1 frame.
 
 % Specify Transmit waveform structure for focusing.
 TW(1).type = 'parametric';
-TW(1).Parameters = [Trans.frequency,.67,50,1];
+TW(1).Parameters = [Trans.frequency,.67,30,1];
 
 % Specify TX structure array.
 TX = repmat(struct('waveform', 1, ...
@@ -90,10 +91,12 @@ TX = repmat(struct('waveform', 1, ...
                    'Delay', zeros(1,Resource.Parameters.numTransmit)), 1, 1);
 % % % TX(2).aperture = 65;  % Use the tx aperture that starts at element 65.
 % % % TX(3).aperture = 129; % Use the tx aperture that starts at element 129.
+if sum(Resource.Parameters.target_position) ~= 0
 delays = compute_linear_array_delays(Trans.ElementPos,...,
-    Resource.parameters.target_position,...,
+    Resource.Parameters.target_position,...,
     Resource.Parameters.speedOfSound*1000);
 TX(1).Delay = delays(Trans.HVMux.ApertureES(:,aperture_num)~=0);
+end
 % Specify TGC Waveform structure.
 TGC.CntrlPts = [234,368,514,609,750,856,1023,1023];
 TGC.rangeMax = 200;

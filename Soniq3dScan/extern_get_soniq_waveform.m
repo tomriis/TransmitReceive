@@ -19,7 +19,7 @@ function extern_get_soniq_waveform(RData)
     [t,wv] = readWaveform(filename_snq);
 
     save(filename_mat,'t','wv');
-
+    delete(filename_snq)
     Resource.Parameters.current_index = current_index +1;
 
     assignin('base','Resource',Resource);
