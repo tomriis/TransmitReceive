@@ -4,7 +4,7 @@ evalin('base','clear');
 p = inputParser;
 addRequired(p, 'positions');
 addRequired(p, 'lib');
-addOptional(p, 'target_position', [0 25]);
+addOptional(p, 'target_position', [0 0 25]);
 addOptional(p, 'file_name', 'C:\Users\Verasonics\Documents\VerasonicsScanFiles\el_');
 addOptional(p, 'imaging_freq', 8.5);
 addOptional(p, 'stim_freq', 8.5);
@@ -91,18 +91,21 @@ TX = repmat(struct('waveform', 1, ...
                    'Delay', zeros(1,Resource.Parameters.numTransmit)), 1, 1);
 % % % TX(2).aperture = 65;  % Use the tx aperture that starts at element 65.
 % % % TX(3).aperture = 129; % Use the tx aperture that starts at element 129.
-if sum(Resource.Parameters.target_position) ~= 0
-delays = compute_linear_array_delays(Trans.ElementPos,...,
-    Resource.Parameters.target_position,...,
-    Resource.Parameters.speedOfSound*1000);
-TX(1).Delay = delays(Trans.HVMux.ApertureES(:,aperture_num)~=0);
-end
+% if sum(Resource.Parameters.target_position) ~= 0
+% delays = compute_linear_array_delays(Trans.ElementPos,...,
+%     Resource.Parameters.target_position,...,
+%     Resource.Parameters.speedOfSound*1000);
+% TX(1).Delay = delays(Trans.HVMux.ApertureES(:,aperture_num)~=0);
+% end
+assignin('base','Trans',Trans);
+assignin('base','Resource',Resource);
+TX.FocalPtMm = Resource.Parameters.target_position;
+TX.Delay = computeTXDelays(TX);
 % Specify TGC Waveform structure.
 TGC.CntrlPts = [234,368,514,609,750,856,1023,1023];
 TGC.rangeMax = 200;
 TGC.Waveform = computeTGCWaveform(TGC);
-assignin('base','Trans',Trans);
-assignin('base','Resource',Resource);
+
 
 
 

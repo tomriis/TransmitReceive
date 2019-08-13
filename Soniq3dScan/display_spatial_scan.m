@@ -1,4 +1,4 @@
-function pnp_field = display_spatial_scan(file_base_name)
+function [pnp_field] = display_spatial_scan(file_base_name)
 % Given base file name, parses all mat files and creates data structure
 % organized by coordinates in file name
 
@@ -38,7 +38,7 @@ end
 
 figure; imagesc(x,y,pnp_field');
 f = split(file_base_name,'\');
-title(f{end-1});
+title("No Focus");
 xlabel('x (mm)');
 ylabel('y (mm)');
 

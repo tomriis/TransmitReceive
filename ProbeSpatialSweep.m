@@ -1,11 +1,10 @@
 function ProbeSpatialSweep()
-    scans = {'C:\Users\Verasonics\Documents\VerasonicsScanFiles\no_focus\el_',...,
-        'C:\Users\Verasonics\Documents\VerasonicsScanFiles\f0_25\el_',...,
-        'C:\Users\Verasonics\Documents\VerasonicsScanFiles\f7_25\el_'};
-    pos = {[0 0],[0 25], [7 25]};
+    scans = {'C:\Users\Verasonics\Documents\VerasonicsScanFiles\f0_23\el_',...,
+        'C:\Users\Verasonics\Documents\VerasonicsScanFiles\f10_23\el_'};
+    pos = {[0 0 23], [10 0 23]};
     
-    for kk = 1:3
-    try    
+    for kk = 1:2
+    try
     lib = loadSoniqLibrary();
     openSoniq(lib);
     set_oscope_parameters(lib)
@@ -28,7 +27,9 @@ function ProbeSpatialSweep()
         current_positions = positions(idx:end,:);
         LinearArray3DScan(current_positions, lib);
     end
-    catch
+    catch e
+        disp(e.message);
         exit
     end
+
 end
