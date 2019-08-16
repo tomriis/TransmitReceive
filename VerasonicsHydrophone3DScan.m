@@ -1,13 +1,19 @@
-function VerasonicsHydrophone3DScan(freq)
+function VerasonicsHydrophone3DScan(varargin)
 evalin('base','clear');
-output_file_base_name = ['C:\Users\Verasonics\Documents\VerasonicsScanFiles\el_',num2str(freq),'_'];
+p = inputParser;
+addRequired(p, 'positions');
+addRequired(p, 'lib');
+addOptional(p, 'frequency', 0.5);
+parse(p, varargin{:})
+
+output_file_base_name = ['C:\Users\Verasonics\Documents\VerasonicsScanFiles\ElResponse\el_',];
 %% User defined Scan Parameters
 NA = 1;
-frames_per_position = 4;
+frames_per_position = 1;
 positionerDelay = 100; % Positioner delay in ms
 frame_rate = 10;
-centerFrequency = freq/1e6; % Frequency in MHz
-num_half_cycles = 200; % Number of half cycles to use in each pulse
+centerFrequency = p.Results.frequency; % Frequency in MHz
+num_half_cycles = 30; % Number of half cycles to use in each pulse
 desiredDepth = 100; % Desired depth in mm
 endDepth = desiredDepth;
 rx_channel = 100;
@@ -15,11 +21,13 @@ tx_channel = 1;
 Vpp =15;
 
 %% Connect to Soniq
-lib = loadSoniqLibrary();
-openSoniq(lib);
-set_oscope_parameters(lib)
-
-[axis,positions] = verasonics_3d_scan(lib, [-40,1,1],[60,55,85],[250,4,1]);
+lib = p.Results.lib;
+%[axis,positions] = verasonics_3d_scan(lib, [-40,1,1],[60,55,85],[250,4,1]);
+axis = [1,2,0];
+positions = p.Results.positions;
+if mod(length(positions),2)~=0
+    positions(end,:)=[];
+end
 n_positions = length(positions);
 n_frames = frames_per_position * n_positions;
 
@@ -29,6 +37,7 @@ n_frames = frames_per_position * n_positions;
 Resource.VDAS.dmaTimeout = 10000;
 
 Resource.Parameters.soniqLib = lib;
+Resource.Parameters.scan_mode = 1;
 Resource.Parameters.numTransmit = tx_channel; 
 Resource.Parameters.numRcvChannels = rx_channel; 
 Resource.Parameters.connector = 1; 
@@ -41,6 +50,7 @@ Resource.Parameters.filename = output_file_base_name;
 Resource.Parameters.positions = positions;
 Resource.Parameters.current_index = 1;
 Resource.Parameters.position_index = 1;
+Resource.Parameters.fakeScanhead = 1;
 %Resource.Parameters.simulateMode = 1; % runs script in simulate mode
 %Media.MP(1,:) = [0,0,100,1.0]; % [x, y, z, reflectivity]
 RcvProfile.AntiAliasCutoff = 10; %allowed values are 5, 10, 15, 20, and 30
@@ -63,7 +73,7 @@ Trans.impedance = 50;
 Trans.maxHighVoltage = Vpp;
 
 Resource.RcvBuffer(1).datatype = 'int16';
-Resource.RcvBuffer(1).rowsPerFrame = NA*2048*4; % this allows for 1/4 maximum range
+Resource.RcvBuffer(1).rowsPerFrame = 4096; % this allows for 1/4 maximum range
 Resource.RcvBuffer(1).colsPerFrame = Trans.numelements; % change to 256 for V256 system
 Resource.RcvBuffer(1).numFrames = n_frames; % minimum size is 1 frame.
 
@@ -90,7 +100,7 @@ Apod([Resource.Parameters.tx_channel,Resource.Parameters.rx_channel])=1;
 Receive = repmat(struct(...
     'Apod', Apod, ... 
     'startDepth', 0, ...
-    'endDepth', ceil(desiredDepth*1e-3/(Resource.Parameters.speedOfSound/(centerFrequency*1e6))), ...
+    'endDepth', ceil(desiredDepth*1e-3/(Resource.Parameters.speedOfSound/(0.5*1e6))), ...
     'TGC', 1, ...
     'mode', 0, ...
     'bufnum', 1, ...
@@ -145,20 +155,12 @@ for i = 1:n_positions
         idx = (i-1)*frames_per_position+j;
         Event(n).info = 'Acquire RF Data.';
         Event(n).tx = 1; 
-        Event(n).rcv = idx; 
+        Event(n).rcv = 1; 
         Event(n).recon = 0; 
         Event(n).process = 0; 
         Event(n).seqControl = [1,3,nsc]; 
         SeqControl(nsc).command = 'transferToHost';
         nsc = nsc + 1;
-        n = n+1;
-
-        Event(n).info = 'Call external Processing function 1.';
-        Event(n).tx = 0;
-        Event(n).rcv = 0; 
-        Event(n).recon = 0; 
-        Event(n).process = 1; 
-        Event(n).seqControl = 0;
         n = n+1;
 
         Event(n).info = 'Call external Processing function 2.';

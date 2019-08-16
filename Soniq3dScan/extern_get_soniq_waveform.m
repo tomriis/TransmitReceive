@@ -1,6 +1,6 @@
 function extern_get_soniq_waveform(RData)
     Resource = evalin('base','Resource');
-    TPC = evalin('base','TPC');
+    Trans = evalin('base','Trans');
     lib = Resource.Parameters.soniqLib;
     save_location = Resource.Parameters.filename;
     current_index = Resource.Parameters.current_index;
@@ -10,7 +10,7 @@ function extern_get_soniq_waveform(RData)
             y = getPosition(Resource.Parameters.soniqLib, Resource.Parameters.Axis(2));
             z = getPosition(Resource.Parameters.soniqLib, Resource.Parameters.Axis(3));
             name = [save_location,num2str(current_index),'_',num2str(x),...,
-                                '_',num2str(y),'_',num2str(z)];
+                                '_',num2str(y),'_',num2str(z),'_',num2str(Trans.frequency)];
         end
     else
         stim_freq = Resource.Parameters.stim_freq;
@@ -33,7 +33,7 @@ function extern_get_soniq_waveform(RData)
 
     save(filename_mat,'t','wv');
     delete(filename_snq)
-    Resource.Parameters.current_index = current_index +1;
+    Resource.Parameters.current_index = current_index + 1;
 
     assignin('base','Resource',Resource);
     
