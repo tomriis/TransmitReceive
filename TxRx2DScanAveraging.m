@@ -127,13 +127,6 @@ Process(2).Parameters = {'srcbuffer','receive',... % name of buffer to process.
 'srcframenum',0,...
 'dstbuffer','none'};
 
-Process(3).classname = 'External';
-Process(3).method = 'startScan';
-Process(3).Parameters = {'srcbuffer','receive',... % name of buffer to process.
-'srcbufnum',1,...
-'srcframenum',1,...
-'dstbuffer','none'};
-
 n = 1;
 nsc = 1;
 
