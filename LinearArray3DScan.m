@@ -55,6 +55,7 @@ Resource.Parameters.Axis = [1,2,0];
 Resource.Parameters.numAvg = NA;
 Resource.Parameters.filename = output_file_base_name;
 Resource.Parameters.positions = positions;
+Resource.Parameters.scan_mode = 1;
 Resource.Parameters.current_index = 1;
 Resource.Parameters.position_index = 1;
 Resource.Parameters.simulateMode = 0; % runs script with hardware

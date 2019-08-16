@@ -1,6 +1,4 @@
 function ProbeSpatialSweep()
-    scans = {'C:\Users\Verasonics\Documents\VerasonicsScanFiles\f0_23\el_',...,
-        'C:\Users\Verasonics\Documents\VerasonicsScanFiles\f10_23\el_'};
     pos = {[0 0 23], [10 0 23]};
     
     for kk = 1:2
