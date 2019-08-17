@@ -10,8 +10,8 @@ output_file_base_name = ['C:\Users\Verasonics\Documents\VerasonicsScanFiles\ElRe
 %% User defined Scan Parameters
 NA = 1;
 frames_per_position = 1;
-positionerDelay = 100; % Positioner delay in ms
-frame_rate = 10;
+positionerDelay = 40; % Positioner delay in ms
+frame_rate = 5;
 centerFrequency = p.Results.frequency; % Frequency in MHz
 num_half_cycles = 30; % Number of half cycles to use in each pulse
 desiredDepth = 100; % Desired depth in mm
