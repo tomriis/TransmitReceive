@@ -10,7 +10,7 @@ output_file_base_name = ['C:\Users\Verasonics\Documents\VerasonicsScanFiles\ElRe
 %% User defined Scan Parameters
 NA = 1;
 frames_per_position = 1;
-positionerDelay = 40; % Positioner delay in ms
+positionerDelay = 10; % Positioner delay in ms
 frame_rate = 5;
 centerFrequency = p.Results.frequency; % Frequency in MHz
 num_half_cycles = 30; % Number of half cycles to use in each pulse
@@ -18,7 +18,7 @@ desiredDepth = 100; % Desired depth in mm
 endDepth = desiredDepth;
 rx_channel = 100;
 tx_channel = 1;
-Vpp =15;
+Vpp =20;
 
 %% Connect to Soniq
 lib = p.Results.lib;

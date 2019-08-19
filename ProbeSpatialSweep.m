@@ -1,10 +1,8 @@
 function ProbeSpatialSweep(frequency)
-    
-    
     lib = loadSoniqLibrary();
     openSoniq(lib);
     set_oscope_parameters(lib)
-    [axis,positions] = verasonics_3d_scan(lib,[-25,0,11],[25,0,11],[52,1,1]);
+    [axis,positions] = verasonics_3d_scan(lib,[-9,0,5],[9,0,15],[95,1,55]);
     n_positions = length(positions);
     max_positions_per_scan = 500;
     n_scans = floor(n_positions/max_positions_per_scan);

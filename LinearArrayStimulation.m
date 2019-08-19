@@ -5,8 +5,8 @@ p = inputParser;
 addRequired(p, 'lib');
 addOptional(p, 'target_position', [0 0 23]);
 addOptional(p, 'file_name', 'C:\Users\Verasonics\Documents\VerasonicsScanFiles\el_');
-addOptional(p, 'imaging_freq', 8.5);
-addOptional(p, 'stim_freq', 8.5);
+addOptional(p, 'imaging_freq', 5.5);
+addOptional(p, 'stim_freq', 5.5);
 addOptional(p, 'duty_cycle', 100);
 addOptional(p, 'duration', 0.0005);
 addOptional(p, 'prf',10000);
@@ -16,7 +16,7 @@ parse(p, varargin{:})
 output_file_base_name = p.Results.file_name;
 %% User defined Scan Parameters
 NA = 1;
-frames_per_position = 1;
+frames_per_position = 20;
 positionerDelay = 1000; % Positioner delay in ms
 frame_rate = 10;
 
@@ -78,7 +78,7 @@ Resource.RcvBuffer(1).numFrames = n_frames; % minimum size is 1 frame.
 
 % Specify Transmit waveform structure for focusing.
 TW(1).type = 'parametric';
-wavelengths = floor(Resource.Parameters.duration*Trans.frequency*1e6)
+wavelengths = 40;%floor(Resource.Parameters.duration*Trans.frequency*1e6)
 TW(1).Parameters = [Trans.frequency,.67,2*wavelengths,1];
 
 % Specify TX structure array.
@@ -159,7 +159,7 @@ Process(3).Parameters = {'srcbuffer','receive',...
 'dstbuffer','none'};
 
 SeqControl(1).command = 'timeToNextAcq';
-SeqControl(1).argument = 1/(frame_rate)*1e6; 
+SeqControl(1).argument = 11;%/(frame_rate)*1e6; 
 
 SeqControl(2).command = 'jump';
 SeqControl(2).condition = 'exitAfterJump';
@@ -178,7 +178,7 @@ for i = 1:n_positions
             Event(n).recon = 0; % no reconstruction.
             Event(n).process = 0; % no processing
             if k == 1
-                Event(n).seqControl = [3]; 
+                Event(n).seqControl = [1,3]; 
             end
             n = n+1;
         end

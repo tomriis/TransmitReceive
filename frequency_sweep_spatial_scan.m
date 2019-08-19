@@ -13,14 +13,14 @@ for i = 1:length(Files)
     z = str2double(f{length(f)-1});
     freq = str2double(f{length(f)});
     
-    S = load([Files(i).folder,'/',Files(i).name]);
-    try
-        pnp = findPeakNegativeVoltage(S.wv,15);
-    catch
-        count = count +1;
-        pnp = findPeakNegativeVoltage(S.wv,4);
-    end
-    grid_xyf(i,:)=[x,y,freq,pnp];
+%     S = load([Files(i).folder,'\',Files(i).name]);
+%     try
+%         pnp = findPeakNegativeVoltage(S.wv,15);
+%     catch
+%         count = count +1;
+%         pnp = findPeakNegativeVoltage(S.wv,4);
+%     end
+    grid_xyf(i,:)=[x,z,freq,0];
 end
 disp('Done Scanning files');
 disp(['Failed on ', num2str(count), ' of ', num2str(length(Files))]);
