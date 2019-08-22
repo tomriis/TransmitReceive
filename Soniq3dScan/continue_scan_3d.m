@@ -17,7 +17,7 @@ function continue_scan_3d(RData)
     axis = Resource.Parameters.Axis;
     soniqLib = Resource.Parameters.soniqLib;
     
-    if next_pos > length(positions)
+    if next_pos > size(positions,1)
         VsClose;
     else
         movePositionerAbs(soniqLib, axis(1), positions(next_pos, 1));

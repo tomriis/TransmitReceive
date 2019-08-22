@@ -33,7 +33,7 @@ else
 %         peaks = peaks(1:nCycles);
 %         idx = idx(1:nCycles);
 %     end
-    pnv = median(peaks);
+    pnv = -min(v);
 end
 
 if 0
