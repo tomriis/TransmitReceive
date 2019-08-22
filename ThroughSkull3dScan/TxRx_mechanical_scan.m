@@ -3,16 +3,16 @@ evalin('base','clear');
 %% User defined Scan Parameters
 NA = 100;
 NA = 2*NA;
-nFrames = length(app.positions);
+nFrames = length(app.one_d_scan.positions);
 prf = 1000;
 positionerDelay = 1000; % Positioner delay in ms
 centerFrequency = 0.5; % Frequency in MHz
-num_half_cycles = 20; % Number of half cycles to use in each pulse
+num_half_cycles = 2; % Number of half cycles to use in each pulse
 desiredDepth = 160; % Desired depth in mm
 endDepth = desiredDepth;
 rx_channel = 100;
 tx_channel = 1;
-Vpp = 7;
+Vpp = 20;
 
 %% Setup System
 % Since there are often long pauses after moving the positioner
