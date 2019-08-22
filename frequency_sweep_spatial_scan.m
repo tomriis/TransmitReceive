@@ -13,22 +13,30 @@ for i = 1:length(Files)
     z = str2double(f{length(f)-1});
     freq = str2double(f{length(f)});
     
-%     S = load([Files(i).folder,'\',Files(i).name]);
-%     try
-%         pnp = findPeakNegativeVoltage(S.wv,15);
-%     catch
-%         count = count +1;
-%         pnp = findPeakNegativeVoltage(S.wv,4);
-%     end
-    grid_xyf(i,:)=[x,z,freq,0];
+    S = load([Files(i).folder,'\',Files(i).name]);
+    try
+        pnp = findPeakNegativeVoltage(S.wv,3);
+    catch
+        count = count +1;
+        pnp = 0;%findPeakNegativeVoltage(S.wv,4);
+        disp(['Frequency ', num2str(freq)]);
+        disp(Files(i).name);
+    end
+    grid_xyf(i,:)=[x,z,freq,pnp];
+    
+    if mod(i,10000) == 0
+        disp(['on ', num2str(i), ' of ', num2str(length(Files))]);
+    end
 end
 disp('Done Scanning files');
 disp(['Failed on ', num2str(count), ' of ', num2str(length(Files))]);
-x = sort(unique(grid_xyf(:,1)));
-y = sort(unique(grid_xyf(:,2)));
 f = sort(unique(grid_xyf(:,3)));
 
-pnp_field = zeros(length(x),length(y),length(f));
+x = sort(unique(grid_xyf_h(:,1)));
+y = sort(unique(grid_xyf_h(:,2)));
+
+
+pnp_field_l = zeros(length(x),length(y),length(f));
 
 for i = 1:length(x)
     for j = 1:length(y)
@@ -37,12 +45,20 @@ for i = 1:length(x)
             grid_f = grid_yf(grid_yf(:,2)==y(j),:);
             tmp = grid_f(grid_f(:,3)==f(k),:);
        try
-            pnp_field(i,j,k) = tmp(1,4);
+            pnp_field_l(i,j,k) = tmp(1,4);
        catch
-           disp(['on ', num2str(i), ' of ', num2str(length(x))]);
-           disp(num2str(j));
+%            disp(['on ', num2str(i), ' of ', num2str(length(x))]);
+%            disp(num2str(j));
        end
         end
     end
 end
+
+f_l = f(f>0.62);
+g = ismember(grid_xyf(:,3),f_l);
+grid_xyf_h = grid_xyf(g,:);
+
+
+
+
 end
