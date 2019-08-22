@@ -20,7 +20,10 @@ for i = 1:length(Files)
 %         count = count +1;
 %         pnp = findPeakNegativeVoltage(S.wv,4);
 %     end
-    grid_xyf(i,:)=[x,z,freq,0];
+    grid_xyf(i,:)=[x,z,freq,pnp];
+    if mod(i,10000)==0
+        disp(['On ', num2str(i), ' of ', num2str(length(Files)));
+    end
 end
 disp('Done Scanning files');
 disp(['Failed on ', num2str(count), ' of ', num2str(length(Files))]);
@@ -37,10 +40,10 @@ for i = 1:length(x)
             grid_f = grid_yf(grid_yf(:,2)==y(j),:);
             tmp = grid_f(grid_f(:,3)==f(k),:);
        try
-            pnp_field(i,j,k) = tmp(1,4);
+            eld(i,j,k) = tmp(1,4);
        catch
-           disp(['on ', num2str(i), ' of ', num2str(length(x))]);
-           disp(num2str(j));
+           %disp(['on ', num2str(i), ' of ', num2str(length(x))]);
+           %disp(num2str(j));
        end
         end
     end

@@ -2,7 +2,9 @@ function TxRx_mechanical_scan(app)
 evalin('base','clear');
 %% User defined Scan Parameters
 NA = 100;
+NA = 2*NA;
 nFrames = length(app.positions);
+prf = 1000;
 positionerDelay = 1000; % Positioner delay in ms
 centerFrequency = 0.5; % Frequency in MHz
 num_half_cycles = 20; % Number of half cycles to use in each pulse
@@ -28,6 +30,7 @@ Resource.Parameters.numAvg = NA;
 Resource.Parameters.rx_channel = rx_channel;
 Resource.Parameters.tx_channel = tx_channel;
 Resource.Parameters.positions = app.positions;
+Resource.Parameters.fakeScanhead = 1;
 % Resource.Parameters.simulateMode = 1; % runs script in simulate mode
 RcvProfile.AntiAliasCutoff = 10; %allowed values are 5, 10, 15, 20, and 30
 %RcvProfile.PgaHPF = 80; %enables the integrator feedback path, 0 disables
@@ -68,11 +71,15 @@ TX(1).waveform = 1; % use 1st TW structure.
 TX(1).focus = 0;
 TX(1).Apod = zeros([1,Resource.Parameters.rx_channel]);
 TX(1).Apod(tx_channel)=1;
-
 assignin('base','Trans',Trans);
 assignin('base','Resource',Resource);
-
 TX(1).Delay = computeTXDelays(TX(1));
+
+TX(2).waveform = 1; % use 1st TW structure.
+TX(2).focus = 0;
+TX(2).Apod = zeros([1,Resource.Parameters.rx_channel]);
+TX(2).Apod(rx_channel)=1;
+TX(2).Delay = computeTXDelays(TX(1));
 
 TPC(1).hv = Vpp;
 
@@ -134,6 +141,11 @@ for ii = 1:nFrames
     for jj = 1:NA
         idx = (ii-1)*NA+jj;
         Event(n) = firstEvent;
+        if jj < NA/2
+            Event(n).tx = 1;
+        else
+            Event(n).tx = 2;
+        end
         Event(n).rcv = idx;
         Event(n).seqControl = [1,nsc];
          SeqControl(nsc).command = 'transferToHost';
@@ -141,15 +153,15 @@ for ii = 1:nFrames
         n = n+1;
     end
     if ii < nFrames
-        Event(n).info = 'Sync before moving';
-        Event(n).tx = 0; 
-        Event(n).rcv = 0;
-        Event(n).recon = 0;
-        Event(n).process = 0;
-        Event(n).seqControl = nsc; 
-            SeqControl(nsc).command = 'sync';
-            nsc = nsc+1;
-        n = n+1;
+%         Event(n).info = 'Sync before moving';
+%         Event(n).tx = 0; 
+%         Event(n).rcv = 0;
+%         Event(n).recon = 0;
+%         Event(n).process = 0;
+%         Event(n).seqControl = nsc; 
+%             SeqControl(nsc).command = 'sync';
+%             nsc = nsc+1;
+%         n = n+1;
         
         Event(n).info = 'Move Positioner.';
         Event(n).tx = 0; 
@@ -159,8 +171,8 @@ for ii = 1:nFrames
         % Need to sync or the verasonics system will acquire data faster 
         % than the positioner moves
         Event(n).seqControl = nsc; 
-            SeqControl(nsc).command = 'sync';
-            nsc = nsc+1;
+%             SeqControl(nsc).command = 'sync';
+%             nsc = nsc+1;
         n = n+1;
         
         % Set a delay after moving the positioner.
@@ -196,9 +208,9 @@ Event(n).seqControl = [nsc,nsc+1,nsc+2]; % wait for data to be transferred
 n = n+1;
 
 % Save all the structures to a .mat file.
-svName = 'C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\TxRx2DScanAveraging';
+svName = 'C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\TxRx_mechanical_scan';
 filename = svName;
 save(svName);
-evalin('base', 'load(''C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\TxRx2DScanAveraging.mat'')');
+evalin('base', 'load(''C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\TxRx_mechanical_scan.mat'')');
 evalin('base','VSX');
 end
