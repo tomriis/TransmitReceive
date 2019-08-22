@@ -30,7 +30,7 @@ V_amplitude = 3;
 positions = p.Results.positions;
 lib = p.Results.lib;
 
-n_positions = length(positions);
+n_positions = size(positions,1);
 n_frames = frames_per_position * n_positions;
 
 %% Setup System

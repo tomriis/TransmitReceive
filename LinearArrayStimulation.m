@@ -1,35 +1,36 @@
-function LinearArrayStimulation(varargin)
+function LinearArray3DScan(varargin)
 evalin('base','clear');
 
 p = inputParser;
-% addRequired(p, 'lib');
-addOptional(p, 'target_position', [0 0 23]);
+addRequired(p, 'positions');
+addRequired(p, 'lib');
+addOptional(p, 'target_position', [0 0 25]);
 addOptional(p, 'file_name', 'C:\Users\Verasonics\Documents\VerasonicsScanFiles\el_');
 addOptional(p, 'imaging_freq', 5.5);
 addOptional(p, 'stim_freq', 5.5);
 addOptional(p, 'duty_cycle', 100);
 addOptional(p, 'duration', 0.0005);
 addOptional(p, 'prf',10000);
-addOptional(p, 'v_amplitude',5);
+
 parse(p, varargin{:})
 
 output_file_base_name = p.Results.file_name;
 %% User defined Scan Parameters
 NA = 1;
-frames_per_position = 20;
-positionerDelay = 1000; % Positioner delay in ms
+frames_per_position = 1;
+positionerDelay = 150; % Positioner delay in ms
 frame_rate = 10;
 
 transmit_channels = 128;% Trans.numelements;
 receive_channels = 128;%Trans.numelements;
 imaging_prf = 10000; % 'timeToNextAcq' argument [microseconds] 
-v_amplitude = p.Results.v_amplitude;
+v_amplitude = 1.6;
 %% Connect to Soniq
 
-positions = zeros(8,3);
-lib = 1; %p.Results.lib;
+positions = p.Results.positions;
+lib = p.Results.lib;
 
-n_positions = length(positions);
+n_positions = size(positions,1);
 n_frames = frames_per_position * n_positions;
 
 %% Setup System
@@ -38,12 +39,12 @@ n_frames = frames_per_position * n_positions;
 Resource.VDAS.dmaTimeout = 10000;
 % Stim Resource parameters
 Resource.Parameters.target_position = p.Results.target_position;
-Resource.Parameters.imaging_freq = p.Results.imaging_freq;
+Resource.parameters.imaging_freq = p.Results.imaging_freq;
 Resource.Parameters.stim_freq = p.Results.stim_freq;
-Resource.Parameters.duty_cycle = p.Results.duty_cycle;
-Resource.Parameters.duration = p.Results.duration;
-Resource.Parameters.prf = p.Results.prf;
-Resource.Parameters.v_amplitude = v_amplitude;
+Resource.parameters.duty_cycle = p.Results.duty_cycle;
+Resource.parameters.duration = p.Results.duration;
+Resource.parameters.prf = p.Results.prf;
+
 % Movement parameters
 Resource.Parameters.soniqLib = lib; 
 Resource.Parameters.numTransmit = transmit_channels;
@@ -54,6 +55,7 @@ Resource.Parameters.Axis = [1,2,0];
 Resource.Parameters.numAvg = NA;
 Resource.Parameters.filename = output_file_base_name;
 Resource.Parameters.positions = positions;
+Resource.Parameters.scan_mode = 1;
 Resource.Parameters.current_index = 1;
 Resource.Parameters.position_index = 1;
 Resource.Parameters.simulateMode = 0; % runs script with hardware
@@ -77,10 +79,10 @@ Resource.RcvBuffer(1).colsPerFrame = Trans.numelements; % change to 256 for V256
 Resource.RcvBuffer(1).numFrames = n_frames; % minimum size is 1 frame.
 
 % Specify Transmit waveform structure for focusing.
-TW(1).type = 'parametric';
-wavelengths = 40;%floor(Resource.Parameters.duration*Trans.frequency*1e6)
-TW(1).Parameters = [Trans.frequency,.67,2*wavelengths,1];
-
+% TW(1).type = 'parametric';
+% TW(1).Parameters = [Trans.frequency,.67,80,1];
+% TW(1).type = 'envelope';
+TW = waveform_parameters_to_envelope(Trans.frequency*1e6, 0.50, 20000, 100e-6);
 % Specify TX structure array.
 TX = repmat(struct('waveform', 1, ...
                    'Origin', [0.0,0.0,0.0], ...
@@ -99,11 +101,9 @@ TX = repmat(struct('waveform', 1, ...
 % end
 assignin('base','Trans',Trans);
 assignin('base','Resource',Resource);
-TX(1).FocalPtMm = Resource.Parameters.target_position;
-TX(1).Delay = computeTXDelays(TX);
+TX.FocalPtMm = Resource.Parameters.target_position;
+TX.Delay = computeTXDelays(TX);
 
-% TPC(1).inUse = 0;
-% TPC(5).inUse = 1;
 TPC(1).hv = v_amplitude;
 
 % Specify TGC Waveform structure.
@@ -137,29 +137,29 @@ end
 
 %% Event and Process Code
 
-% Process(1).classname = 'External';
-% Process(1).method = 'extern_exit_loop';
-% Process(1).Parameters = {'srcbuffer','receive',...
-% 'srcbufnum',1,...
-% 'srcframenum',-1,...
-% 'dstbuffer','none'};
-% 
-% Process(2).classname = 'External';
-% Process(2).method = 'extern_get_soniq_waveform';
-% Process(2).Parameters = {'srcbuffer','receive',...
-% 'srcbufnum',1,...
-% 'srcframenum',-1,...
-% 'dstbuffer','none'};
-% 
-% Process(3).classname = 'External';
-% Process(3).method = 'continue_scan_3d';
-% Process(3).Parameters = {'srcbuffer','receive',... 
-% 'srcbufnum',1,...
-% 'srcframenum',-1,...
-% 'dstbuffer','none'};
+Process(1).classname = 'External';
+Process(1).method = 'myExternFunction';
+Process(1).Parameters = {'srcbuffer','receive',...
+'srcbufnum',1,...
+'srcframenum',-1,...
+'dstbuffer','none'};
+
+Process(2).classname = 'External';
+Process(2).method = 'extern_get_soniq_waveform';
+Process(2).Parameters = {'srcbuffer','receive',...
+'srcbufnum',1,...
+'srcframenum',-1,...
+'dstbuffer','none'};
+
+Process(3).classname = 'External';
+Process(3).method = 'continue_scan_3d';
+Process(3).Parameters = {'srcbuffer','receive',... 
+'srcbufnum',1,...
+'srcframenum',-1,...
+'dstbuffer','none'};
 
 SeqControl(1).command = 'timeToNextAcq';
-SeqControl(1).argument = 11;%/(frame_rate)*1e6; 
+SeqControl(1).argument = 4*10; %1/(frame_rate)*1e6; 
 
 SeqControl(2).command = 'jump';
 SeqControl(2).condition = 'exitAfterJump';
@@ -177,31 +177,41 @@ for i = 1:n_positions
             Event(n).rcv = 0; % use 1st Rcv structure for frame.
             Event(n).recon = 0; % no reconstruction.
             Event(n).process = 0; % no processing
-            if k == 1
+            if j == 1
                 Event(n).seqControl = [1,3]; 
+            else
+                Event(n).seqControl = 1;
             end
             n = n+1;
         end
 
-%         Event(n).info = 'Call external Processing function 2.';
-%         Event(n).tx = 0; % no TX structure.
-%         Event(n).rcv = 0; % no Rcv structure.
-%         Event(n).recon = 0; % no reconstruction.
-%         Event(n).process = 2; % call processing function
-%         Event(n).seqControl = 0;
-%         n = n+1;
+        Event(n).info = 'Call external Processing function 2.';
+        Event(n).tx = 0; % no TX structure.
+        Event(n).rcv = 0; % no Rcv structure.
+        Event(n).recon = 0; % no reconstruction.
+        Event(n).process = 0; % call processing function
+        Event(n).seqControl = 0;
+        n = n+1;
     end
-%     Event(n).info = 'Exit';
-%     Event(n).tx = 0; 
-%     Event(n).rcv = 0;
-%     Event(n).recon = 0;
-%     Event(n).process = 1;
+            Event(n).info = 'Call external Processing function 2.';
+        Event(n).tx = 0; % no TX structure.
+        Event(n).rcv = 0; % no Rcv structure.
+        Event(n).recon = 0; % no reconstruction.
+        Event(n).process = 2; % call processing function
+        Event(n).seqControl = 0;
+        n = n+1;
+    
+    Event(n).info = 'Move Positioner.';
+    Event(n).tx = 0; 
+    Event(n).rcv = 0;
+    Event(n).recon = 0;
+    Event(n).process = 3;
     % Need to sync or the verasonics system will acquire data faster 
     % than the positioner moves
 %         Event(n).seqControl = nsc; 
 %             SeqControl(nsc).command = 'sync';
 %             nsc = nsc+1;
-%     n = n+1;
+    n = n+1;
 
     Event(n).info = 'Wait';
     Event(n).tx = 0; 
@@ -223,19 +233,10 @@ Event(n).recon = 0;
 Event(n).process = 0; 
 Event(n).seqControl = 2;
 
-% EF(1).Function = {'extern_exit_loop(RData)',...
-%     'Resource = evalin(''base'',''Resource'');',...
-%     'current_index = Resource.Parameters.current_index;',...
-%     'if current_index >= Resource.RcvBuffer(1).numFrames',...
-%     'VsClose',...
-%     'end',...
-%     'return'};
-
 filename = 'C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\LinearArrayStimulation';
 
 ws = [filename, '.mat'];
 save(filename);
 evalin('base', 'load(''C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\LinearArrayStimulation.mat'')');
 evalin('base','VSX');
-
 end
