@@ -1,18 +1,18 @@
 function TxRx_mechanical_scan(app)
 evalin('base','clear');
 %% User defined Scan Parameters
-NA = 100;
+NA = 4;
 NA = 2*NA;
 nFrames = length(app.one_d_scan.positions);
-prf = 1000;
+prf = 10000;
 positionerDelay = 1000; % Positioner delay in ms
 centerFrequency = 0.5; % Frequency in MHz
-num_half_cycles = 2; % Number of half cycles to use in each pulse
+num_half_cycles = 1; % Number of half cycles to use in each pulse
 desiredDepth = 160; % Desired depth in mm
 endDepth = desiredDepth;
 rx_channel = 100;
 tx_channel = 1;
-Vpp = 20;
+Vpp = 15;
 
 %% Setup System
 % Since there are often long pauses after moving the positioner
@@ -29,7 +29,7 @@ Resource.Paramaters.location = 1;
 Resource.Parameters.numAvg = NA;
 Resource.Parameters.rx_channel = rx_channel;
 Resource.Parameters.tx_channel = tx_channel;
-Resource.Parameters.positions = app.positions;
+Resource.Parameters.positions = app.one_d_scan.positions;
 Resource.Parameters.fakeScanhead = 1;
 % Resource.Parameters.simulateMode = 1; % runs script in simulate mode
 RcvProfile.AntiAliasCutoff = 10; %allowed values are 5, 10, 15, 20, and 30

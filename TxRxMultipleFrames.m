@@ -5,7 +5,7 @@ nFrames = 10;
 positionerDelay = 1000; % Positioner delay in ms
 frame_rate = 5;
 centerFrequency = 0.5; % Frequency in MHz
-num_half_cycles = 200; % Number of half cycles to use in each pulse
+num_half_cycles = 2; % Number of half cycles to use in each pulse
 desiredDepth = 100; % Desired depth in mm
 endDepth = desiredDepth;
 rx_channel = 100;
@@ -32,6 +32,7 @@ Resource.Parameters.rx_channel = rx_channel;
 Resource.Parameters.tx_channel = tx_channel;
 Resource.Parameters.filename = 'C:\Users\Verasonics\Documents\VerasonicsScanFiles\verasonics_scan';
 Resource.Parameters.current_index = 1;
+Resource.Parameters.fakeScanhead = 1;
 %Resource.Parameters.simulateMode = 1; % runs script in simulate mode
 
 RcvProfile.AntiAliasCutoff = 10; %allowed values are 5, 10, 15, 20, and 30
@@ -66,13 +67,13 @@ Resource.RcvBuffer(1).colsPerFrame = Trans.numelements; % change to 256 for V256
 Resource.RcvBuffer(1).numFrames = nFrames; % minimum size is 1 frame.
 
 % Specify Transmit waveform structure.
-TW(1).type = 'parametric';
-TW(1).Parameters = [centerFrequency,0.67,num_half_cycles,1]; % A, B, C, D
+TW(1).type = 'envelope';% 'parametric';
+%TW(1).Parameters = [centerFrequency,0.67,num_half_cycles,1]; % A, B, C, D
 %TW2 = waveform_parameters_to_envelope(5e6, 0.4, 10000, 0.01);
 % TW(2).type = 'envelope';
-% TW(2).envNumCycles = TW2.envNumCycles;
-% TW(2).envFrequency = TW2.envFrequency;
-% TW(2).envPulseWidth = TW2.envPulseWidth;
+TW(1).envNumCycles = 1;
+TW(1).envFrequency = [0.5];
+TW(1).envPulseWidth = [0.5];
 % Specify TX structure array.
 TX(1).waveform = 1; % use 1st TW structure.
 TX(1).focus = 0;
@@ -164,25 +165,25 @@ for i = 1:Resource.RcvBuffer(1).numFrames
     Event(n).seqControl = 0;
     n = n+1;
     
-    Event(n).info = 'Call external Processing function 2.';
-    Event(n).tx = 0; % no TX structure.
-    Event(n).rcv = 0; % no Rcv structure.
-    Event(n).recon = 0; % no reconstruction.
-    Event(n).process = 2; % call processing function
-    Event(n).seqControl = 0;
-    n = n+1;
+%     Event(n).info = 'Call external Processing function 2.';
+%     Event(n).tx = 0; % no TX structure.
+%     Event(n).rcv = 0; % no Rcv structure.
+%     Event(n).recon = 0; % no reconstruction.
+%     Event(n).process = 2; % call processing function
+%     Event(n).seqControl = 0;
+%     n = n+1;
 
-            Event(n).info = 'Wait';
-        Event(n).tx = 0; 
-        Event(n).rcv = 0;
-        Event(n).recon = 0;
-        Event(n).process = 0;
-        Event(n).seqControl = nsc;
-            SeqControl(nsc).command = 'noop';
-            SeqControl(nsc).argument = (positionerDelay*1e-3)/200e-9;
-            SeqControl(nsc).condition = 'Hw&Sw';
-            nsc = nsc+1;
-        n = n+1;
+%             Event(n).info = 'Wait';
+%         Event(n).tx = 0; 
+%         Event(n).rcv = 0;
+%         Event(n).recon = 0;
+%         Event(n).process = 0;
+%         Event(n).seqControl = nsc;
+%             SeqControl(nsc).command = 'noop';
+%             SeqControl(nsc).argument = (positionerDelay*1e-3)/200e-9;
+%             SeqControl(nsc).condition = 'Hw&Sw';
+%             nsc = nsc+1;
+%         n = n+1;
 
 end
 
