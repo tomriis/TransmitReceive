@@ -1,11 +1,11 @@
-function TxRx_mechanical_scan(app)
+function TxRx_mechanical_scan(positions, app)
 evalin('base','clear');
 %% User defined Scan Parameters
-NA = 4;
+NA = 50;
 NA = 2*NA;
-nFrames = length(app.one_d_scan.positions);
-prf = 10000;
-positionerDelay = 1000; % Positioner delay in ms
+nFrames = size(positions,1);
+prf = 1000;
+positioner_delays = get_positioner_delays(app, positions); % Positioner delay in ms
 centerFrequency = 0.5; % Frequency in MHz
 num_half_cycles = 1; % Number of half cycles to use in each pulse
 desiredDepth = 160; % Desired depth in mm
@@ -25,11 +25,11 @@ Resource.Parameters.numRcvChannels = rx_channel; % change to 64 for Vantage 64 s
 Resource.Parameters.connector = 1; % trans. connector to use (V 256). Use 0 for 129-256
 Resource.Parameters.speedOfSound = 1540; % speed of sound in m/sec
 Resource.Parameters.app = app;
-Resource.Paramaters.location = 1;
+Resource.Paramaters.position_index = 1;
 Resource.Parameters.numAvg = NA;
 Resource.Parameters.rx_channel = rx_channel;
 Resource.Parameters.tx_channel = tx_channel;
-Resource.Parameters.positions = app.one_d_scan.positions;
+Resource.Parameters.positions = positions;
 Resource.Parameters.fakeScanhead = 1;
 % Resource.Parameters.simulateMode = 1; % runs script in simulate mode
 RcvProfile.AntiAliasCutoff = 10; %allowed values are 5, 10, 15, 20, and 30
@@ -118,7 +118,7 @@ end
 
 % Specify an external processing event.
 Process(1).classname = 'External';
-Process(1).method = 'one_dimensional_scan';
+Process(1).method = 'N_dimensional_scan';
 Process(1).Parameters = {'srcbuffer','receive',... % name of buffer to process.
 'srcbufnum',1,...
 'srcframenum',-1,...
@@ -183,7 +183,7 @@ for ii = 1:nFrames
         Event(n).process = 0;
         Event(n).seqControl = nsc;
             SeqControl(nsc).command = 'noop';
-            SeqControl(nsc).argument = (positionerDelay*1e-3)/200e-9;
+            SeqControl(nsc).argument = (positioner_delays(ii))/200e-9;
             SeqControl(nsc).condition = 'Hw&Sw';
             nsc = nsc+1;
         n = n+1;

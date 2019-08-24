@@ -6,9 +6,6 @@ function ProbeSpatialSweep(frequency)
     n_positions = length(positions);
     max_positions_per_scan = 500;
     n_scans = floor(n_positions/max_positions_per_scan);
-%     if n_scans == 0
-%         n_scans = 1;
-%     end
     
     for i = 1:n_scans
         idx = (i-1)*max_positions_per_scan + 1;
