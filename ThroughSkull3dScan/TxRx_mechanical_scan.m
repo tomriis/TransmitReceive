@@ -1,11 +1,12 @@
 function TxRx_mechanical_scan(positions, app)
 evalin('base','clear');
 %% User defined Scan Parameters
-NA = 50;
+NA = 20;
 NA = 2*NA;
 nFrames = size(positions,1);
 prf = 1000;
-positioner_delays = get_positioner_delays(app, positions); % Positioner delay in ms
+rate = 0.01; % ms delay per step
+positioner_delays = get_positioner_delays(app, positions,rate); % Positioner delay in ms
 centerFrequency = 0.5; % Frequency in MHz
 num_half_cycles = 1; % Number of half cycles to use in each pulse
 desiredDepth = 160; % Desired depth in mm
@@ -20,12 +21,12 @@ Vpp = 15;
 Resource.VDAS.dmaTimeout = 10000;
 
 % Specify system parameters
-Resource.Parameters.numTransmit = tx_channel; % no. of transmit channels
+Resource.Parameters.numTransmit = rx_channel; % no. of transmit channels
 Resource.Parameters.numRcvChannels = rx_channel; % change to 64 for Vantage 64 system
 Resource.Parameters.connector = 1; % trans. connector to use (V 256). Use 0 for 129-256
 Resource.Parameters.speedOfSound = 1540; % speed of sound in m/sec
 Resource.Parameters.app = app;
-Resource.Paramaters.position_index = 1;
+Resource.Parameters.position_index = 1;
 Resource.Parameters.numAvg = NA;
 Resource.Parameters.rx_channel = rx_channel;
 Resource.Parameters.tx_channel = tx_channel;
@@ -102,7 +103,7 @@ firstReceive.bufnum = 1;
 firstReceive.framenum = 1;
 firstReceive.acqNum = 1;
 firstReceive.sampleMode = 'custom';
-firstReceive.decimSampleRate = 50*Trans.frequency;
+firstReceive.decimSampleRate = 30*Trans.frequency;
 firstReceive.LowPassCoef = [+0.00000 +0.00000 +0.00000 +0.00000 +0.00000 +0.00000...
  +0.00000 +0.00000 +0.00000 +0.00000 +0.00000 +1.00000];
 firstReceive.InputFilter = [];
@@ -120,6 +121,13 @@ end
 Process(1).classname = 'External';
 Process(1).method = 'N_dimensional_scan';
 Process(1).Parameters = {'srcbuffer','receive',... % name of buffer to process.
+'srcbufnum',1,...
+'srcframenum',-1,...
+'dstbuffer','none'};
+
+Process(2).classname = 'External';
+Process(2).method = 'external_quit';
+Process(2).Parameters = {'srcbuffer','receive',... % name of buffer to process.
 'srcbufnum',1,...
 'srcframenum',-1,...
 'dstbuffer','none'};
@@ -196,16 +204,25 @@ Event(n).tx = 0; % no TX structure.
 Event(n).rcv = 0; % no Rcv structure.
 Event(n).recon = 0; % no reconstruction.
 Event(n).process = 0; % call processing function
-Event(n).seqControl = [nsc,nsc+1,nsc+2]; % wait for data to be transferred
+Event(n).seqControl = [nsc,nsc+1]; % wait for data to be transferred
     SeqControl(nsc).command = 'waitForTransferComplete';
     SeqControl(nsc).argument = 2;
     nsc = nsc+1;
     SeqControl(nsc).command = 'markTransferProcessed';
     SeqControl(nsc).argument = 2;
     nsc = nsc+1;
-    SeqControl(nsc).command = 'sync';
-    nsc = nsc+1;
 n = n+1;
+
+Event(n).info = 'close this bitch down';
+Event(n).tx = 0; % no TX structure.
+Event(n).rcv = 0; % no Rcv structure.
+Event(n).recon = 0; % no reconstruction.
+Event(n).process = 2; % call processing function
+
+EF(1).Function = {'external_quit(RData)',...
+'VsClose',...
+'return',...
+};
 
 % Save all the structures to a .mat file.
 svName = 'C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\TxRx_mechanical_scan';
