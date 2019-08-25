@@ -5,7 +5,7 @@ nFrames = 10;
 positionerDelay = 1000; % Positioner delay in ms
 frame_rate = 5;
 centerFrequency = 0.5; % Frequency in MHz
-num_half_cycles = 2; % Number of half cycles to use in each pulse
+num_half_cycles = 1; % Number of half cycles to use in each pulse
 desiredDepth = 100; % Desired depth in mm
 endDepth = desiredDepth;
 rx_channel = 100;
@@ -67,13 +67,13 @@ Resource.RcvBuffer(1).colsPerFrame = Trans.numelements; % change to 256 for V256
 Resource.RcvBuffer(1).numFrames = nFrames; % minimum size is 1 frame.
 
 % Specify Transmit waveform structure.
-TW(1).type = 'envelope';% 'parametric';
-%TW(1).Parameters = [centerFrequency,0.67,num_half_cycles,1]; % A, B, C, D
+TW(1).type = 'parametric';
+TW(1).Parameters = [centerFrequency,0.67,num_half_cycles,1]; % A, B, C, D
 %TW2 = waveform_parameters_to_envelope(5e6, 0.4, 10000, 0.01);
 % TW(2).type = 'envelope';
-TW(1).envNumCycles = 1;
-TW(1).envFrequency = [0.5];
-TW(1).envPulseWidth = [0.5];
+% TW(1).envNumCycles = 1;
+% TW(1).envFrequency = [0.5];
+% TW(1).envPulseWidth = [0.5];
 % Specify TX structure array.
 TX(1).waveform = 1; % use 1st TW structure.
 TX(1).focus = 0;
@@ -109,7 +109,7 @@ Receive = repmat(struct(...
     'framenum', 1, ...
     'acqNum', 1, ...
     'sampleMode', 'custom', ...
-    'decimSampleRate', 50*Trans.frequency,...
+    'decimSampleRate', 30*Trans.frequency,...
     'LowPassCoef',[],...
     'InputFilter',[]),...
     1,Resource.RcvBuffer(1).numFrames);

@@ -5,11 +5,11 @@ NA = 20;
 NA = 2*NA;
 nFrames = size(positions,1);
 prf = 1000;
-rate = 0.01; % ms delay per step
+rate = 0.007; % ms delay per step
 positioner_delays = get_positioner_delays(app, positions,rate); % Positioner delay in ms
 centerFrequency = 0.5; % Frequency in MHz
 num_half_cycles = 1; % Number of half cycles to use in each pulse
-desiredDepth = 160; % Desired depth in mm
+desiredDepth = 155; % Desired depth in mm
 endDepth = desiredDepth;
 rx_channel = 100;
 tx_channel = 1;
@@ -104,8 +104,7 @@ firstReceive.framenum = 1;
 firstReceive.acqNum = 1;
 firstReceive.sampleMode = 'custom';
 firstReceive.decimSampleRate = 30*Trans.frequency;
-firstReceive.LowPassCoef = [+0.00000 +0.00000 +0.00000 +0.00000 +0.00000 +0.00000...
- +0.00000 +0.00000 +0.00000 +0.00000 +0.00000 +1.00000];
+firstReceive.LowPassCoef = [];
 firstReceive.InputFilter = [];
 
 for ii = 1:nFrames
