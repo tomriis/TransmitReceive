@@ -1,7 +1,7 @@
 function mechanical_scan(app)
     dx = app.ND_scan.stop-app.ND_scan.start;
-    output_filename_base=['C:\Users\Verasonics\Documents\VerasonicsScanFiles\MechanicalScan\2D\',...,
-        'scan2_',num2str(dx(1)),'_',num2str(dx(2)),'_',num2str(dx(3)),'_'];
+    output_filename_base=['C:\Users\Verasonics\Documents\VerasonicsScanFiles\MechanicalScan\',...,
+        'control_',num2str(dx(1)),'_',num2str(dx(2)),'_',num2str(dx(3)),'_'];
     positions = app.ND_scan.positions;
     disp(positions(end,:))
     n_positions = size(positions, 1);
@@ -16,7 +16,7 @@ function mechanical_scan(app)
         disp(['On ',num2str(idx),' of ', num2str(n_positions)]);
         TxRx_mechanical_scan(current_positions, app);
         last_position = current_positions(end,:);
-        output_file_name = [output_filename_base,num2str(105+i)];
+        output_file_name = [output_filename_base,num2str(i)];
         evalin('base','TxRx_get_RcvData(RcvData)')
         evalin('base', sprintf('save(''%s'', ''data'')', output_file_name));
     end
@@ -34,7 +34,7 @@ function mechanical_scan(app)
                     current_positions = current_positions(1:end-1,:);
                 end
                 TxRx_mechanical_scan(current_positions, app);
-                output_file_name = [output_filename_base,num2str(105+i+1),'.mat'];
+                output_file_name = [output_filename_base,num2str(i+1),'.mat'];
                 evalin('base','TxRx_get_RcvData(RcvData)')
                 evalin('base', sprintf('save(''%s'', ''data'')', output_file_name));
             end

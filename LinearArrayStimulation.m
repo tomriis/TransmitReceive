@@ -1,13 +1,11 @@
-function LinearArray3DScan(varargin)
+function LinearArrayStimulation(varargin)
 evalin('base','clear');
 
 p = inputParser;
-addRequired(p, 'positions');
-addRequired(p, 'lib');
-addOptional(p, 'target_position', [0 0 25]);
+addOptional(p, 'target_position', [0 0 0]);
 addOptional(p, 'file_name', 'C:\Users\Verasonics\Documents\VerasonicsScanFiles\el_');
-addOptional(p, 'imaging_freq', 5.5);
-addOptional(p, 'stim_freq', 5.5);
+addOptional(p, 'imaging_freq', 8.5);
+addOptional(p, 'stim_freq', 8.5);
 addOptional(p, 'duty_cycle', 100);
 addOptional(p, 'duration', 0.0005);
 addOptional(p, 'prf',10000);
@@ -17,21 +15,20 @@ parse(p, varargin{:})
 output_file_base_name = p.Results.file_name;
 %% User defined Scan Parameters
 NA = 1;
-frames_per_position = 1;
+frames_per_position = 4;
 positionerDelay = 150; % Positioner delay in ms
 frame_rate = 10;
 
 transmit_channels = 128;% Trans.numelements;
 receive_channels = 128;%Trans.numelements;
 imaging_prf = 10000; % 'timeToNextAcq' argument [microseconds] 
-v_amplitude = 1.6;
+v_amplitude = 15;
 %% Connect to Soniq
+lib = loadSoniqLibrary();
+openSoniq(lib);
+set_oscope_parameters(lib)
 
-positions = p.Results.positions;
-lib = p.Results.lib;
-
-n_positions = size(positions,1);
-n_frames = frames_per_position * n_positions;
+n_frames = 4;
 
 %% Setup System
 % Since there are often long pauses after moving the positioner
@@ -54,11 +51,11 @@ Resource.Parameters.speedOfSound = 1540; % m/s
 Resource.Parameters.Axis = [1,2,0];
 Resource.Parameters.numAvg = NA;
 Resource.Parameters.filename = output_file_base_name;
-Resource.Parameters.positions = positions;
 Resource.Parameters.scan_mode = 1;
 Resource.Parameters.current_index = 1;
 Resource.Parameters.position_index = 1;
 Resource.Parameters.simulateMode = 0; % runs script with hardware
+Resource.Parameters.fakeScanhead = 1;
 startDepth = 5;
 endDepth = 200;
 %Media.MP(1,:) = [0,0,100,1.0]; % [x, y, z, reflectivity]
@@ -67,11 +64,25 @@ RcvProfile.AntiAliasCutoff = 10; %allowed values are 5, 10, 15, 20, and 30
 %RcvProfile.LnaHPF = 50; % (200, 150,100,50) 200 KHz, 150 KHz, 100 KHz and 50 KHz respectively. 
 
 HVmux_script = 1;
-aperture_num = 64;
+aperture_num = 1;
 Trans.name = 'L12-5 50mm';%'L12-5 38mm'; % 'L11-4v';
 Trans.units = 'mm';
 Trans.frequency = Resource.Parameters.stim_freq; % not needed if using default center frequency
 Trans = computeTrans(Trans);
+% Trans.name = 'Custom';
+% Trans.frequency = Resource.Parameters.stim_freq; % Lowest transmit frequency is 0.6345 Pg. 60
+% Trans.units = 'mm';
+% Trans.lensCorrection = 1;
+% %Trans.Bandwidth = [0,3]; % Set to 0.6 of center frequency by default
+% Trans.type = 0;
+% Trans.numelements = transmit_channels;
+% Trans.elementWidth = 0.1703;
+% Trans.ElementPos = ones(transmit_channels,5);
+% Trans.ElementSens = ones(101,1);
+% Trans.connType = 1;
+% Trans.Connector = (1:Trans.numelements)';
+% Trans.impedance = 51;
+% Trans.maxHighVoltage = v_amplitude;
 
 Resource.RcvBuffer(1).datatype = 'int16';
 Resource.RcvBuffer(1).rowsPerFrame = 4096; % this allows for 1/4 maximum range
@@ -79,14 +90,14 @@ Resource.RcvBuffer(1).colsPerFrame = Trans.numelements; % change to 256 for V256
 Resource.RcvBuffer(1).numFrames = n_frames; % minimum size is 1 frame.
 
 % Specify Transmit waveform structure for focusing.
-% TW(1).type = 'parametric';
-% TW(1).Parameters = [Trans.frequency,.67,80,1];
-% TW(1).type = 'envelope';
-TW = waveform_parameters_to_envelope(Trans.frequency*1e6, 0.50, 20000, 100e-6);
+%TW(1).type = 'parametric';
+%TW(1).Parameters = [Trans.frequency,.67,10,1];
+TW(1).type = 'envelope';
+TW = waveform_parameters_to_envelope(Trans.frequency*1e6, 0.50, 20000, 50e-6);
 % Specify TX structure array.
 TX = repmat(struct('waveform', 1, ...
                    'Origin', [0.0,0.0,0.0], ...
-                   'aperture', aperture_num, ...
+                   'aperture',aperture_num, ...
                    'Apod', ones(1,Resource.Parameters.numTransmit), ...
                    'focus', 0.0, ...
                    'Steer', [0.0,0.0], ...
@@ -105,7 +116,8 @@ TX.FocalPtMm = Resource.Parameters.target_position;
 TX.Delay = computeTXDelays(TX);
 
 TPC(1).hv = v_amplitude;
-
+% TPC(1).inUse = 0;
+% TPC(5).inUse = 1;
 % Specify TGC Waveform structure.
 TGC(1).CntrlPts = [300,450,575,675,750,800,850,900];
 TGC(1).rangeMax = endDepth;
@@ -159,7 +171,7 @@ Process(3).Parameters = {'srcbuffer','receive',...
 'dstbuffer','none'};
 
 SeqControl(1).command = 'timeToNextAcq';
-SeqControl(1).argument = 4*10; %1/(frame_rate)*1e6; 
+SeqControl(1).argument = 1/(frame_rate)*1e6; 
 
 SeqControl(2).command = 'jump';
 SeqControl(2).condition = 'exitAfterJump';
@@ -169,7 +181,7 @@ SeqControl(3).command = 'triggerOut';
 nsc = 4; % start index for new SeqControl
 
 n = 1;
-for i = 1:n_positions
+for i = 1:Resource.RcvBuffer(1).numFrames
     for j = 1:frames_per_position
         for k = 1:1%length(Resource.parameters.TW)
             Event(n).info = 'Acquire RF Data.';
@@ -201,17 +213,17 @@ for i = 1:n_positions
         Event(n).seqControl = 0;
         n = n+1;
     
-    Event(n).info = 'Move Positioner.';
-    Event(n).tx = 0; 
-    Event(n).rcv = 0;
-    Event(n).recon = 0;
-    Event(n).process = 3;
-    % Need to sync or the verasonics system will acquire data faster 
-    % than the positioner moves
-%         Event(n).seqControl = nsc; 
-%             SeqControl(nsc).command = 'sync';
-%             nsc = nsc+1;
-    n = n+1;
+%     Event(n).info = 'Move Positioner.';
+%     Event(n).tx = 0; 
+%     Event(n).rcv = 0;
+%     Event(n).recon = 0;
+%     Event(n).process = 3;
+%     % Need to sync or the verasonics system will acquire data faster 
+%     % than the positioner moves
+% %         Event(n).seqControl = nsc; 
+% %             SeqControl(nsc).command = 'sync';
+% %             nsc = nsc+1;
+%     n = n+1;
 
     Event(n).info = 'Wait';
     Event(n).tx = 0; 

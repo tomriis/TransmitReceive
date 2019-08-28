@@ -4,7 +4,7 @@ evalin('base','clear');
 p = inputParser;
 addRequired(p, 'positions');
 addRequired(p, 'lib');
-addOptional(p, 'target_position', [0 0 25]);
+addOptional(p, 'target_position', [0 0 0]);
 addOptional(p, 'file_name', 'C:\Users\Verasonics\Documents\VerasonicsScanFiles\el_');
 addOptional(p, 'imaging_freq', 8.5);
 addOptional(p, 'stim_freq', 8.5);
@@ -17,7 +17,7 @@ parse(p, varargin{:})
 output_file_base_name = p.Results.file_name;
 %% User defined Scan Parameters
 NA = 1;
-frames_per_position = 1;
+frames_per_position = 2;
 positionerDelay = 150; % Positioner delay in ms
 frame_rate = 10;
 
@@ -67,7 +67,7 @@ RcvProfile.AntiAliasCutoff = 10; %allowed values are 5, 10, 15, 20, and 30
 %RcvProfile.LnaHPF = 50; % (200, 150,100,50) 200 KHz, 150 KHz, 100 KHz and 50 KHz respectively. 
 
 HVmux_script = 1;
-aperture_num = 64;
+aperture_num = 1;
 Trans.name = 'L12-5 50mm';%'L12-5 38mm'; % 'L11-4v';
 Trans.units = 'mm';
 Trans.frequency = Resource.Parameters.stim_freq; % not needed if using default center frequency
