@@ -1,12 +1,23 @@
-function data_to_image(data)
+function V = data_to_image(data)
 
 Nx = 256;
 Ny = 256;
 Nz = 95;
 V = zeros(Nx,Ny,Nz);
-positions = get_unique_positions(data);
+p = get_unique_positions(data);
+N = [Nx, Ny, Nz];
+XYZ = cell(1,3);
+for i = 1:3
+    XYZ{i} = linspace(min(p{i}), max(p{i}),N(i));
+end
 
-grid_xyz = 
-binned_data = get_binned_data(data_array, N)
-
-niftiwrite(V,'outbrain.nii');
+for i = 1:length(data)
+    ijk = coordinates_to_index(XYZ, data(i).v_xyz);
+    V = V + add_data_to_grid(ijk, data(i), XYZ, V);
+    if mod(i, 1000)==0
+        disp(['On ', num2str(i), ' of ', num2str(length(data))]);
+    end
+end
+    
+end
+niftiwrite(V_rx,'/Users/tomriis/MATLAB/outskull.nii');
