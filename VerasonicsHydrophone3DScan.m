@@ -6,29 +6,29 @@ addRequired(p, 'lib');
 addOptional(p, 'frequency', 0.5);
 parse(p, varargin{:})
 
-output_file_base_name = ['C:\Users\Verasonics\Documents\VerasonicsScanFiles\ElResponse\el_',];
+output_file_base_name = ['C:\Users\Verasonics\Documents\VerasonicsScanFiles\2DControl\el_',];
 %% User defined Scan Parameters
 NA = 1;
-frames_per_position = 1;
+frames_per_position = 4;
 positionerDelay = 10; % Positioner delay in ms
-frame_rate = 5;
+frame_rate = 1000;
 centerFrequency = p.Results.frequency; % Frequency in MHz
 num_half_cycles = 30; % Number of half cycles to use in each pulse
 desiredDepth = 100; % Desired depth in mm
 endDepth = desiredDepth;
 rx_channel = 100;
 tx_channel = 1;
-Vpp =20;
+Vpp =30;
 
 %% Connect to Soniq
 lib = p.Results.lib;
 %[axis,positions] = verasonics_3d_scan(lib, [-40,1,1],[60,55,85],[250,4,1]);
 axis = [1,2,0];
 positions = p.Results.positions;
-if mod(length(positions),2)~=0
+if mod(size(positions,1),2)~=0
     positions(end,:)=[];
 end
-n_positions = length(positions);
+n_positions = size(positions,1);
 n_frames = frames_per_position * n_positions;
 
 %% Setup System
@@ -50,6 +50,8 @@ Resource.Parameters.filename = output_file_base_name;
 Resource.Parameters.positions = positions;
 Resource.Parameters.current_index = 1;
 Resource.Parameters.position_index = 1;
+Resource.Parameters.frames_per_position_idx = 1;
+Resource.Parameters.frames_per_position = frames_per_position;
 Resource.Parameters.fakeScanhead = 1;
 %Resource.Parameters.simulateMode = 1; % runs script in simulate mode
 %Media.MP(1,:) = [0,0,100,1.0]; % [x, y, z, reflectivity]
