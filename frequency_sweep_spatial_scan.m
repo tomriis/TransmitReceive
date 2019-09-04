@@ -23,7 +23,7 @@ for i = 1:length(Files)
         disp(['Frequency ', num2str(freq)]);
         disp(Files(i).name);
     end
-    grid_xyf(i,:)=[x,y,freq,pnp,num];
+    grid_xyf(i,:)=[x,z,freq,pnp,num];
     
     if mod(i,10000) == 0
         disp(['on ', num2str(i), ' of ', num2str(length(Files))]);

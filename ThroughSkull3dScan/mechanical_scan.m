@@ -1,7 +1,7 @@
 function mechanical_scan(app)
     dx = app.ND_scan.stop-app.ND_scan.start;
     output_filename_base=['C:\Users\Verasonics\Documents\VerasonicsScanFiles\MechanicalScan\',...,
-        'control_',num2str(dx(1)),'_',num2str(dx(2)),'_',num2str(dx(3)),'_'];
+        '2DScan22_',num2str(dx(1)),'_',num2str(dx(2)),'_',num2str(dx(3)),'_'];
     positions = app.ND_scan.positions;
     disp(positions(end,:))
     n_positions = size(positions, 1);
