@@ -34,8 +34,7 @@ data = scale*ws_rx_data;
 options.DisplayName = 'Skull';
 plot_areaerrorbar(data, options)
 legend;
-title(strcat(["Tx Signal: Tx Tranducer ", Tx, ", Rx Transducer Harsonics, ",...
-    "10 Cycles, V ", V]));
+title(strcat(["TxRx 5 Cycles, 7 V "]));
 xlabel('Time (us)');
 hold off;
 
