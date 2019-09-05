@@ -1,11 +1,11 @@
 function TxRx_mechanical_scan(positions, app)
-evalin('base','clear');
+evalin('base','clear all');
 %% User defined Scan Parameters
-NA = 20;
+NA = 15;
 NA = 2*NA;
 nFrames = size(positions,1);
 prf = 1000;
-rate = 0.006; % ms delay per step
+rate = 0.008; % ms delay per step
 positioner_delays = get_positioner_delays(app, positions,rate); % Positioner delay in ms
 centerFrequency = 0.5; % Frequency in MHz
 num_half_cycles = 1; % Number of half cycles to use in each pulse
@@ -13,7 +13,7 @@ desiredDepth = 155; % Desired depth in mm
 endDepth = desiredDepth;
 rx_channel = 100;
 tx_channel = 1;
-Vpp = 20;
+Vpp = 17;
 
 %% Setup System
 % Since there are often long pauses after moving the positioner
@@ -151,7 +151,7 @@ for ii = 1:nFrames
         if jj < NA/2
             Event(n).tx = 1;
         else
-            Event(n).tx = 2;
+            Event(n).tx = 1;
         end
         Event(n).rcv = idx;
         Event(n).seqControl = [1,nsc];
@@ -177,7 +177,7 @@ for ii = 1:nFrames
         Event(n).process = 1;
         % Need to sync or the verasonics system will acquire data faster 
         % than the positioner moves
-        Event(n).seqControl = nsc; 
+%       Event(n).seqControl = nsc; 
 %             SeqControl(nsc).command = 'sync';
 %             nsc = nsc+1;
         n = n+1;
@@ -198,19 +198,19 @@ for ii = 1:nFrames
 end
 
 
-Event(n).info = 'Call external Processing function.';
-Event(n).tx = 0; % no TX structure.
-Event(n).rcv = 0; % no Rcv structure.
-Event(n).recon = 0; % no reconstruction.
-Event(n).process = 0; % call processing function
-Event(n).seqControl = [nsc,nsc+1]; % wait for data to be transferred
-    SeqControl(nsc).command = 'waitForTransferComplete';
-    SeqControl(nsc).argument = 2;
-    nsc = nsc+1;
-    SeqControl(nsc).command = 'markTransferProcessed';
-    SeqControl(nsc).argument = 2;
-    nsc = nsc+1;
-n = n+1;
+% Event(n).info = 'Call external Processing function.';
+% Event(n).tx = 0; % no TX structure.
+% Event(n).rcv = 0; % no Rcv structure.
+% Event(n).recon = 0; % no reconstruction.
+% Event(n).process = 0; % call processing function
+% Event(n).seqControl = [nsc,nsc+1]; % wait for data to be transferred
+%     SeqControl(nsc).command = 'waitForTransferComplete';
+%     SeqControl(nsc).argument = 2;
+%     nsc = nsc+1;
+%     SeqControl(nsc).command = 'markTransferProcessed';
+%     SeqControl(nsc).argument = 2;
+%     nsc = nsc+1;
+% n = n+1;
 
 Event(n).info = 'close this bitch down';
 Event(n).tx = 0; % no TX structure.

@@ -1,6 +1,6 @@
 function move_positioner(app, current_pos,next_pos)
-    rate = 0.002;
-    d_steps = floor((next_pos-current_pos)./app.scale);
+    rate = 0.008;
+    d_steps = round((next_pos-current_pos)./app.scale);
     disp(num2str(d_steps));
     
     pins = {{app.x_dir_pin, app.x_step_pin};
@@ -13,7 +13,7 @@ function move_positioner(app, current_pos,next_pos)
         else
             stepper_motor_inc(abs(d_steps(i)),app.connected_arduino, pins{i}{1}, pins{i}{2}, d_steps(i)>0);
         end
-        pause(abs(d_steps(i))*rate);
+        %pause(abs(d_steps(i))*rate);
     end
     
 end
