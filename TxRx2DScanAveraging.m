@@ -11,7 +11,7 @@ positionerDelay = 1000; % Positioner delay in ms
 prf = 500; % Pulse repitition Frequency in Hz
 centerFrequency = 0.5; % Frequency in MHz
 num_half_cycles = 20; % Number of half cycles to use in each pulse
-desiredDepth = 160; % Desired depth in mm
+desiredDepth = 150; % Desired depth in mm
 endDepth = desiredDepth;
 rx_channel = 100;
 tx_channel = 1;
@@ -125,13 +125,6 @@ Process(2).method = 'show1dScan';
 Process(2).Parameters = {'srcbuffer','receive',... % name of buffer to process.
 'srcbufnum',1,...
 'srcframenum',0,...
-'dstbuffer','none'};
-
-Process(3).classname = 'External';
-Process(3).method = 'startScan';
-Process(3).Parameters = {'srcbuffer','receive',... % name of buffer to process.
-'srcbufnum',1,...
-'srcframenum',1,...
 'dstbuffer','none'};
 
 n = 1;
