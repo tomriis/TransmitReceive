@@ -8,7 +8,7 @@ function V2 = add_data_to_grid(ijk, data, XYZ, V)
     for i = 1:N
         line_ijk(i,:) = coordinates_to_index(XYZ,[line(i,:),v(3)]);
     end
-    d =get_binned_data( abs(data.rx), N);
+    d =get_binned_data( abs(data.tx), N);
     for i = 1:N
         V2(line_ijk(i,1), line_ijk(i,2), line_ijk(i,3)) = d(i);
     end

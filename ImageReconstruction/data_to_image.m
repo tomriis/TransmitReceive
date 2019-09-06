@@ -1,8 +1,8 @@
 function V = data_to_image(data)
 
-Nx = 256;
-Ny = 256;
-Nz = 95;
+Nx = 138;
+Ny = 138;
+Nz = 70;
 V = zeros(Nx,Ny,Nz);
 p = get_unique_positions(data);
 N = [Nx, Ny, Nz];
@@ -18,6 +18,7 @@ for i = 1:length(data)
         disp(['On ', num2str(i), ' of ', num2str(length(data))]);
     end
 end
-    
+
+%V = zero_volume_center(V,13);
+% niftiwrite(V,'C:\Users\Tom\Documents\MATLAB\outskull2.nii');
 end
-niftiwrite(V_rx,'/Users/tomriis/MATLAB/outskull.nii');
