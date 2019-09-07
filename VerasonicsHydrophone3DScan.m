@@ -6,7 +6,7 @@ addRequired(p, 'lib');
 addOptional(p, 'frequency', 0.5);
 parse(p, varargin{:})
 
-output_file_base_name = ['C:\Users\Verasonics\Documents\VerasonicsScanFiles\2DControl\el_',];
+output_file_base_name = ['C:\Users\Verasonics\Documents\VerasonicsScanFiles\2DElScan\el_',];
 %% User defined Scan Parameters
 NA = 1;
 frames_per_position = 4;
