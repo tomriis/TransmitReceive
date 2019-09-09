@@ -14,25 +14,31 @@
 % Taylor Webb
 % University of Utah
 
-function pnv = findPeakNegativeVoltage(v,nCycles)
+function [mnv, pnv] = findPeakNegativeVoltage(v,nCycles)
 if nCycles < 5
     pnv = -min(v);
 else
-    threshold = 0.65*max(v);
-    idx = find(v>=threshold);
-    idx1 = idx(1);
-    idxEnd = idx(end);
-    
-    pulse = -v(idx1:idxEnd);
+    try
+        threshold = 0.65*max(v);
+        idx = find(v>=threshold);
+        idx1 = idx(1);
+        idxEnd = idx(end);
 
-    [peaks,idx] = findpeaks(pulse,'MinPeakProminence',threshold);
-    idx = idx(peaks>0);
-    peaks = peaks(peaks>0);
-    
-%     if length(peaks) > nCycles
-%         peaks = peaks(1:nCycles);
-%         idx = idx(1:nCycles);
-%     end
+        pulse = -v(idx1:idxEnd);
+
+        [peaks,idx] = findpeaks(pulse,'MinPeakProminence',threshold);
+        idx = idx(peaks>0);
+        peaks = peaks(peaks>0);
+
+        if length(peaks) > nCycles
+            [~, I] = sort(peaks, 'descend');
+            peaks = peaks(I(1:nCycles));
+            idx = idx(I(1:nCycles));
+        end
+    mnv = median(peaks);
+    catch
+        mnv = 0;
+    end
     pnv = -min(v);
 end
 
