@@ -8,8 +8,14 @@ end
 center_vol{3} = 1:size(V,3);
 [X,Y,Z]= ndgrid(center_vol{1}, center_vol{2},center_vol{3});
 
+threshold = 1;
+mean_intensity = mean(V(V>threshold),'all');
+
 for i = 1:length(X(:))
-    V(X(i), Y(i),Z(i)) = 0;
+    if V(X(i),Y(i),Z(i)) > threshold
+        V(X(i), Y(i),Z(i)) = mean_intensity;
+    end
 end
 
 end
+

@@ -19,6 +19,4 @@ for i = 1:length(data)
     end
 end
 
-%V = zero_volume_center(V,13);
-% niftiwrite(V,'C:\Users\Tom\Documents\MATLAB\outskull2.nii');
 end
