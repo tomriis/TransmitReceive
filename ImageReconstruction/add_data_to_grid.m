@@ -14,7 +14,14 @@ function V2 = add_data_to_grid(ijk, data, XYZ, V)
     d(d<2*d_std) = 0;
     d(d>0)= log(d(d>0));
     
-    for i = 1 : N
-        V2(line_ijk(i,1), line_ijk(i,2), line_ijk(i,3)) = d(i);
+    [pks,locs] = findpeaks(d);
+    
+    if ~isempty(locs)
+        i = locs(1);
+        V2(line_ijk(i,1), line_ijk(i,2), line_ijk(i,3)) = 1;
     end
+    
+%     for i = 1 : N
+%         V2(line_ijk(i,1), line_ijk(i,2), line_ijk(i,3)) = d(i);
+%     end
 end

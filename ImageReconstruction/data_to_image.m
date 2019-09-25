@@ -2,7 +2,7 @@ function V = data_to_image(data)
 
 Nx = 138;
 Ny = 138;
-Nz = 70;
+Nz = 23;
 V = zeros(Nx,Ny,Nz);
 p = get_unique_positions(data);
 N = [Nx, Ny, Nz];

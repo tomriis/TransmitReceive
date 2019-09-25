@@ -1,4 +1,4 @@
-data_directory = 'C:\Users\Tom\Documents\MATLAB\2DScan3\';
+data_directory = 'C:\Users\Tom\Documents\MATLAB\2DScan4\';
 Receive = evalin('base','Receive');
 fs = Receive(1).ADCRate*1e6/Receive(1).decimFactor;
 volume_center_length = 12;
@@ -17,4 +17,4 @@ V1 = zero_volume_center(V, volume_center_length);
 
 V1 = zero_upper_edge(V1, Z_lower_bound, innerRadius);
 
-niftiwrite(V1,'C:\Users\Tom\Documents\MATLAB\V301harasonics2.nii');
+niftiwrite(V,'C:\Users\Tom\Documents\MATLAB\Harisonics1.nii');
