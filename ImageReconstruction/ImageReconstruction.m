@@ -17,4 +17,4 @@ V1 = zero_volume_center(V, volume_center_length);
 
 V1 = zero_upper_edge(V1, Z_lower_bound, innerRadius);
 
-niftiwrite(V,'C:\Users\Tom\Documents\MATLAB\Harisonics1.nii');
+%niftiwrite(V,'C:\Users\Tom\Documents\MATLAB\Harisonics1.nii');
