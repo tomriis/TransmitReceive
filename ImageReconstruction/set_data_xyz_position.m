@@ -1,10 +1,10 @@
-function data = sort_and_scale_data(all_data)
+function data = set_data_xyz_position(all_data, L)
     data = struct();
-    L = 22.6/2; %mm
+    
     count = 1;
     for i = 1:length(all_data)
         position = all_data(i).position;
-        position(3) = linmap(position(3),[4.5,324], [0 324]);
+        %position(3) = linmap(position(3),[4.5,324], [0 324]);
         
         xyz = arm_position_to_xyz(position, L, 1); 
         data(count).v_xyz = xyz;

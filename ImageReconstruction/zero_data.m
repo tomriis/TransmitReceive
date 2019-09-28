@@ -1,10 +1,9 @@
-function c_data = slice_data(data)
+function c_data = zero_data(data, x1, x2)
     c_data = data;
-    x1 = 600;
-    x2 = 2550;
     if isstruct(c_data)
         for i = 1:length(data)
-            c_data(i).tx = c_data(i).tx(x1:x2);
+            c_data(i).tx(1:x1) = 0;
+            c_data(i).tx(x2:end) = 0;
         end
     else
         c_data = c_data(x1:x2);
