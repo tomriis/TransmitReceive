@@ -5,4 +5,4 @@ function [ws_rx_data, wos_rx_data] = scale_with_to_without_skull(ws_rx_data,wos_
     [pk_ws]=findpeaks(ws_rx_data,'MinPeakHeight',u_ws+sig_ws);
     [pk_wos]=findpeaks(wos_rx_data,'MinPeakHeight',u_wos+sig_wos);
 
-    ws_rx_data = median(pk_wos)/median(pk_ws)*ws_rx_data;
+    ws_rx_data = max(pk_wos)/max(pk_ws)*ws_rx_data;

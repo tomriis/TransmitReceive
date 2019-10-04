@@ -9,7 +9,8 @@ function V = data_to_image(data, Nx, Ny, Nz, N_data)
 
     for i = 1:length(data)
         ijk = coordinates_to_index(XYZ, data(i).v_xyz);
-        V = V + add_data_to_grid(ijk, data(i), XYZ, V, N_data);
+        [V2, d] = add_data_to_grid(ijk, data(i), XYZ, V, N_data);
+        V = V + V2;
         if mod(i, 1000)==0
             disp(['On ', num2str(i), ' of ', num2str(length(data))]);
         end

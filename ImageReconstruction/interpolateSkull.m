@@ -6,7 +6,7 @@ for i = 1:size(demo,3)
     if sum(plane,'all')
         [~, ~, points] = curveFit2DImage(plane, center, 2);
         for j = 1 : length(points)
-            demo(points(j,1), points(j,2), i) = 1;
+            demo(points(j,2), points(j,1), i) = 1;
         end
     end
 end

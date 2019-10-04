@@ -1,4 +1,4 @@
-function V2 = add_data_to_grid(ijk, data, XYZ, V, N_data)
+function [V2, d] = add_data_to_grid(ijk, data, XYZ, V, N_data)
     V2 = zeros(size(V));
     v = data.v_xyz;
     N = length(XYZ{1});
@@ -12,7 +12,7 @@ function V2 = add_data_to_grid(ijk, data, XYZ, V, N_data)
     
     d = get_binned_data( abs(hilbert(data.tx)), N_data);
     d_std = std(d);
-    d(d<2*d_std) = 0;
+    d(d<1*d_std) = 0;
     d(d>0)= log(d(d>0));
     
     [pks,locs] = findpeaks(d);

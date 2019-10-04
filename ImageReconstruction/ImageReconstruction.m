@@ -30,4 +30,4 @@ V1 = zero_volume_center(V, volume_center_length);
 % 
 % V1 = zero_upper_edge(V1, Z_lower_bound, innerRadius);
 
-niftiwrite(mask_data,'C:\Users\Tom\Documents\MATLAB\V301Mask.nii');
+niftiwrite(demo2,'C:\Users\Tom\Documents\MATLAB\V301demo2.nii');

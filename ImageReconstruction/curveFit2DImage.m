@@ -68,6 +68,6 @@ points(or(points(:,1) < 1, points(:,2) < 1),:) = [];
 for k = 1:length(points)
     plane(points(k,2), points(k,1)) = 1;
 end
-figure; imagesc(plane); 
+%figure; imagesc(plane); 
 
 end
