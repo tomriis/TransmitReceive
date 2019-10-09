@@ -24,10 +24,10 @@ Ny = round(1/scale_mm_per_voxel*L);
 p = get_unique_positions(c_data);
 Nz = round(1/scale_mm_per_voxel*max(p{3}));
 
-V = data_to_image(c_data, Nx, Ny, Nz, N_data);
-
-V1 = zero_volume_center(V, volume_center_length);
+% V = data_to_image(c_data, Nx, Ny, Nz, N_data);
+% 
+% V1 = zero_volume_center(V, volume_center_length);
 % 
 % V1 = zero_upper_edge(V1, Z_lower_bound, innerRadius);
 
-niftiwrite(demo2,'C:\Users\Tom\Documents\MATLAB\V301demo2.nii');
+% niftiwrite(demo2,'C:\Users\Tom\Documents\MATLAB\V301demo2.nii');

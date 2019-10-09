@@ -1,21 +1,16 @@
-clear all; close all; clc;
-
-%[lib,axis,locs] = verasonics2dScan(1,-15,15,n_frames);
-Dimensions = [1 2];
-[lib,axis,LOCS1,LOCS2] = verasonics2dScan(Dimensions,[0,30]',[1,31]',[2,2]);
-positions = get_positions(LOCS1, LOCS2); 
+evalin('base','clear all');
 %% User defined Scan Parameters
-NA = 100;
-nFrames = length(LOCS1(:));
-positionerDelay = 1000; % Positioner delay in ms
-prf = 500; % Pulse repitition Frequency in Hz
+NA = 15;
+NA = 2*NA;
+nFrames = 10;
+frame_rate = 5;
+rate = 0.008; % ms delay per step
 centerFrequency = 0.5; % Frequency in MHz
-num_half_cycles = 20; % Number of half cycles to use in each pulse
-desiredDepth = 150; % Desired depth in mm
-endDepth = desiredDepth;
+num_half_cycles = 1; % Number of half cycles to use in each pulse
+desiredDepth = 155; % Desired depth in mm
 rx_channel = 100;
 tx_channel = 1;
-Vpp = 7;
+Vpp = 17;
 
 %% Setup System
 % Since there are often long pauses after moving the positioner
@@ -23,18 +18,15 @@ Vpp = 7;
 Resource.VDAS.dmaTimeout = 10000;
 
 % Specify system parameters
-Resource.Parameters.numTransmit = tx_channel; % no. of transmit channels
+Resource.Parameters.numTransmit = rx_channel; % no. of transmit channels
 Resource.Parameters.numRcvChannels = rx_channel; % change to 64 for Vantage 64 system
 Resource.Parameters.connector = 1; % trans. connector to use (V 256). Use 0 for 129-256
 Resource.Parameters.speedOfSound = 1540; % speed of sound in m/sec
-Resource.Parameters.soniqLib = lib;
-Resource.Parameters.Axis = axis;
-Resource.Parameters.LOCS1 = LOCS1;
-Resource.Parameters.LOCS2 = LOCS2;
+Resource.Parameters.position_index = 1;
 Resource.Parameters.numAvg = NA;
 Resource.Parameters.rx_channel = rx_channel;
 Resource.Parameters.tx_channel = tx_channel;
-Resource.Parameters.positions = positions;
+Resource.Parameters.fakeScanhead = 1;
 % Resource.Parameters.simulateMode = 1; % runs script in simulate mode
 RcvProfile.AntiAliasCutoff = 10; %allowed values are 5, 10, 15, 20, and 30
 %RcvProfile.PgaHPF = 80; %enables the integrator feedback path, 0 disables
@@ -75,7 +67,15 @@ TX(1).waveform = 1; % use 1st TW structure.
 TX(1).focus = 0;
 TX(1).Apod = zeros([1,Resource.Parameters.rx_channel]);
 TX(1).Apod(tx_channel)=1;
+assignin('base','Trans',Trans);
+assignin('base','Resource',Resource);
 TX(1).Delay = computeTXDelays(TX(1));
+
+TX(2).waveform = 1; % use 1st TW structure.
+TX(2).focus = 0;
+TX(2).Apod = zeros([1,Resource.Parameters.rx_channel]);
+TX(2).Apod(rx_channel)=1;
+TX(2).Delay = computeTXDelays(TX(1));
 
 TPC(1).hv = Vpp;
 
@@ -98,9 +98,8 @@ firstReceive.bufnum = 1;
 firstReceive.framenum = 1;
 firstReceive.acqNum = 1;
 firstReceive.sampleMode = 'custom';
-firstReceive.decimSampleRate = 50*Trans.frequency;
-firstReceive.LowPassCoef = [+0.00000 +0.00000 +0.00000 +0.00000 +0.00000 +0.00000...
- +0.00000 +0.00000 +0.00000 +0.00000 +0.00000 +1.00000];
+firstReceive.decimSampleRate = 30*Trans.frequency;
+firstReceive.LowPassCoef = [];
 firstReceive.InputFilter = [];
 
 for ii = 1:nFrames
@@ -113,102 +112,112 @@ for ii = 1:nFrames
 end
 
 % Specify an external processing event.
+% Specify an external processing event.
 Process(1).classname = 'External';
-Process(1).method = 'continueScan2d';
+Process(1).method = 'myExternFunctionAveraging';
 Process(1).Parameters = {'srcbuffer','receive',... % name of buffer to process.
 'srcbufnum',1,...
 'srcframenum',-1,...
 'dstbuffer','none'};
 
 Process(2).classname = 'External';
-Process(2).method = 'show1dScan';
+Process(2).method = 'external_quit';
 Process(2).Parameters = {'srcbuffer','receive',... % name of buffer to process.
 'srcbufnum',1,...
-'srcframenum',0,...
+'srcframenum',-1,...
 'dstbuffer','none'};
 
 n = 1;
-nsc = 1;
+
 
 firstEvent.info = 'Acquire RF Data.';
 firstEvent.tx = 1; % use 1st TX structure.
 firstEvent.rcv = 1; % use 1st Rcv structure.
 firstEvent.recon = 0; % no reconstruction.
 firstEvent.process = 0; % no processing
-firstEvent.seqControl = [1,2];
-    SeqControl(nsc).command = 'timeToNextAcq';
-    SeqControl(nsc).argument = (1/prf)*1e6;
-    nsc = nsc+1;
-
+firstEvent.seqControl = [1];
+SeqControl(1).command = 'timeToNextAcq';
+SeqControl(1).argument = 1/(frame_rate)*1e6; % wait time in microseconds
+ 
+    
+SeqControl(2).command = 'jump';
+SeqControl(2).condition = 'exitAfterJump';
+SeqControl(2).argument = 2*Resource.RcvBuffer(1).numFrames+1;
+ nsc = 3;
 for ii = 1:nFrames
     for jj = 1:NA
         idx = (ii-1)*NA+jj;
         Event(n) = firstEvent;
+        if jj < NA/2
+            Event(n).tx = 1;
+        else
+            Event(n).tx = 1;
+        end
         Event(n).rcv = idx;
         Event(n).seqControl = [1,nsc];
          SeqControl(nsc).command = 'transferToHost';
            nsc = nsc + 1;
         n = n+1;
     end
-    if ii < nFrames
-        Event(n).info = 'Sync before moving';
-        Event(n).tx = 0; 
-        Event(n).rcv = 0;
-        Event(n).recon = 0;
-        Event(n).process = 0;
-        Event(n).seqControl = nsc; 
-            SeqControl(nsc).command = 'sync';
-            nsc = nsc+1;
-        n = n+1;
+%         Event(n).info = 'Sync before moving';
+%         Event(n).tx = 0; 
+%         Event(n).rcv = 0;
+%         Event(n).recon = 0;
+%         Event(n).process = 0;
+%         Event(n).seqControl = nsc; 
+%             SeqControl(nsc).command = 'sync';
+%             nsc = nsc+1;
+%         n = n+1;
         
-        Event(n).info = 'Move Positioner.';
+        Event(n).info = 'Plot Data.';
         Event(n).tx = 0; 
         Event(n).rcv = 0;
         Event(n).recon = 0;
         Event(n).process = 1;
         % Need to sync or the verasonics system will acquire data faster 
         % than the positioner moves
-        Event(n).seqControl = nsc; 
-            SeqControl(nsc).command = 'sync';
-            nsc = nsc+1;
+%       Event(n).seqControl = nsc; 
+%             SeqControl(nsc).command = 'sync';
+%             nsc = nsc+1;
         n = n+1;
         
         % Set a delay after moving the positioner.
-        Event(n).info = 'Wait';
-        Event(n).tx = 0; 
-        Event(n).rcv = 0;
-        Event(n).recon = 0;
-        Event(n).process = 0;
-        Event(n).seqControl = nsc;
-            SeqControl(nsc).command = 'noop';
-            SeqControl(nsc).argument = (positionerDelay*1e-3)/200e-9;
-            SeqControl(nsc).condition = 'Hw&Sw';
-            nsc = nsc+1;
-        n = n+1;
-    end
+%         Event(n).info = 'Wait';
+%         Event(n).tx = 0; 
+%         Event(n).rcv = 0;
+%         Event(n).recon = 0;
+%         Event(n).process = 0;
+%         Event(n).seqControl = nsc;
+%             SeqControl(nsc).command = 'noop';
+%             SeqControl(nsc).argument = (positioner_delays(ii))/200e-9;
+%             SeqControl(nsc).condition = 'Hw&Sw';
+%             nsc = nsc+1;
+%         n = n+1;
 end
 
 
-Event(n).info = 'Call external Processing function.';
+Event(n).info = 'Jump back to Event 1.';
 Event(n).tx = 0; % no TX structure.
 Event(n).rcv = 0; % no Rcv structure.
 Event(n).recon = 0; % no reconstruction.
-Event(n).process = 0; % call processing function
-Event(n).seqControl = [nsc,nsc+1,nsc+2]; % wait for data to be transferred
-    SeqControl(nsc).command = 'waitForTransferComplete';
-    SeqControl(nsc).argument = 2;
-    nsc = nsc+1;
-    SeqControl(nsc).command = 'markTransferProcessed';
-    SeqControl(nsc).argument = 2;
-    nsc = nsc+1;
-    SeqControl(nsc).command = 'sync';
-    nsc = nsc+1;
-n = n+1;
+Event(n).process = 0; % no processing
+Event(n).seqControl = 2; % jump back to Event 1.
+
+
+% Event(n).info = 'close this bitch down';
+% Event(n).tx = 0; % no TX structure.
+% Event(n).rcv = 0; % no Rcv structure.
+% Event(n).recon = 0; % no reconstruction.
+% Event(n).process = 2; % call processing function
+
+EF(1).Function = {'external_quit(RData)',...
+'VsClose',...
+'return',...
+};
 
 % Save all the structures to a .mat file.
 svName = 'C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\TxRx2DScanAveraging';
-save(svName);
-
 filename = svName;
 VSX
 return
+

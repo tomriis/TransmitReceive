@@ -8,17 +8,19 @@ x1 = evalin('base','x1'); x2 = evalin('base','x2');
 fs = evalin('base','fs');
 
 Ns = length(all_data(1).xdr_1);
-t= (1/fs:1/fs:(Ns*1/fs));
+t= (1/fs:1/fs:(Ns*1/fs))*1e6;
 x = (1:Ns)*1540e3/fs/2/10; %cm
 
 %subplot(m_plot, n_plot, p);
+f_rx = data.rx;
 
 f = data.tx;
-disp(length(x))
-disp(length(f))
-plot(x, f);
+% f_rx(1:50)=0; f(1:50)=0;
+plot(t, f,'DisplayName','Tx'); hold on;
+plot(t,f_rx,'DisplayName','Rx');
 title('Windowed');
-xlabel('x (cm)');
+xlabel('t (us)');
+legend
 p=p+1;
   
 % f = abs(hilbert(f));
