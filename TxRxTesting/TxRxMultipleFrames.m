@@ -25,7 +25,6 @@ Resource.Parameters.numTransmit = tx_channel; % no. of transmit channels
 Resource.Parameters.numRcvChannels = rx_channel; % change to 64 for Vantage 64 system
 Resource.Parameters.connector = 1; % trans. connector to use (V 256). Use 0 for 129-256
 Resource.Parameters.speedOfSound = 1540; % speed of sound in m/sec
-Resource.Parameters.Axis = axis;
 Resource.Parameters.numAvg = NA;
 Resource.Parameters.rx_channel = rx_channel;
 Resource.Parameters.tx_channel = tx_channel;
