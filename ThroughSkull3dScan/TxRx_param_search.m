@@ -1,8 +1,12 @@
-function TxRx_mechanical_scan(positions, app)
+function TxRx_param_search()
 evalin('base','clear all');
 %% User defined Scan Parameters
 NA = 15;
 NA = 2*NA;
+
+frequencies = [0.5:0.01:1];
+voltages = [15:5:45];
+
 nFrames = size(positions,1);
 prf = 1000;
 rate = 0.008; % ms delay per step
@@ -76,14 +80,12 @@ assignin('base','Trans',Trans);
 assignin('base','Resource',Resource);
 TX(1).Delay = computeTXDelays(TX(1));
 
-TW(2).type = 'parametric';
-TW(2).Parameters = [0.65,0.67,num_half_cycles,1]; % A, B, C, D
-
-TX(2).waveform = 2; % use 1st TW structure.
+TX(2).waveform = 1; % use 1st TW structure.
 TX(2).focus = 0;
 TX(2).Apod = zeros([1,Resource.Parameters.rx_channel]);
 TX(2).Apod(rx_channel)=1;
 TX(2).Delay = computeTXDelays(TX(1));
+
 
 TPC(1).hv = Vpp;
 
@@ -154,7 +156,7 @@ for ii = 1:nFrames
         if jj < NA/2
             Event(n).tx = 1;
         else
-            Event(n).tx = 2;
+            Event(n).tx = 1;
         end
         Event(n).rcv = idx;
         Event(n).seqControl = [1,nsc];
@@ -215,7 +217,7 @@ end
 %     nsc = nsc+1;
 % n = n+1;
 
-Event(n).info = 'close ';
+Event(n).info = 'close this bitch down';
 Event(n).tx = 0; % no TX structure.
 Event(n).rcv = 0; % no Rcv structure.
 Event(n).recon = 0; % no reconstruction.
@@ -227,9 +229,9 @@ EF(1).Function = {'external_quit(RData)',...
 };
 
 % Save all the structures to a .mat file.
-svName = 'C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\TxRx_mechanical_scan';
+svName = 'C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\TxRx_param_search';
 filename = svName;
 save(svName);
-evalin('base', 'load(''C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\TxRx_mechanical_scan.mat'')');
+evalin('base', 'load(''C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\TxRx_param_search.mat'')');
 evalin('base','VSX');
 end
