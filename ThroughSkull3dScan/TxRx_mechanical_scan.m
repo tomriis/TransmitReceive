@@ -209,10 +209,10 @@ end
 %     nsc = nsc+1;
 %     SeqControl(nsc).command = 'markTransferProcessed';
 %     SeqControl(nsc).argument = 2;
-%     nsc = nsc+1;
+%     nsc = ni
 % n = n+1;
 
-Event(n).info = 'close this bitch down';
+Event(n).info = 'close';
 Event(n).tx = 0; % no TX structure.
 Event(n).rcv = 0; % no Rcv structure.
 Event(n).recon = 0; % no reconstruction.
