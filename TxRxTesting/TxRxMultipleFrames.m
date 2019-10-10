@@ -2,25 +2,24 @@ clear all
 %% User defined Scan Parameters
 NA = 1;
 nFrames = 10;
-positionerDelay = 1000; % Positioner delay in ms
+positionerDelay = 100; % Positioner delay in ms
 frame_rate = 5;
 centerFrequency = 0.5; % Frequency in MHz
-num_half_cycles = 1; % Number of half cycles to use in each pulse
-desiredDepth = 100; % Desired depth in mm
+num_half_cycles = 2; % Number of half cycles to use in each pulse
+desiredDepth = 155; % Desired depth in mm
 endDepth = desiredDepth;
 rx_channel = 100;
 tx_channel = 1;
-Vpp =20;
-
+Vpp =55;
+Resource.Parameters.voltage_array = linspace(1.6, Vpp, 10);
+Resource.Parameters.voltage_index = 1;
+Resource.Parameters.frequency_array = linspace(0.5,4, 20);
+Resource.Parameters.frequency_index = 1;
 %% Setup System
 % Since there are often long pauses after moving the positioner
 % set a high timeout value for the verasonics DMA system
 Resource.VDAS.dmaTimeout = 10000;
-lib = loadSoniqLibrary();
-%openSoniq(lib);
-calllib (lib,'OpenSoniqConnection','localhost');
-set_oscope_parameters(lib)
-Resource.Parameters.soniqLib = lib;
+
 % Specify system parameters
 Resource.Parameters.numTransmit = tx_channel; % no. of transmit channels
 Resource.Parameters.numRcvChannels = rx_channel; % change to 64 for Vantage 64 system
@@ -68,23 +67,12 @@ Resource.RcvBuffer(1).numFrames = nFrames; % minimum size is 1 frame.
 % Specify Transmit waveform structure.
 TW(1).type = 'parametric';
 TW(1).Parameters = [centerFrequency,0.67,num_half_cycles,1]; % A, B, C, D
-%TW2 = waveform_parameters_to_envelope(5e6, 0.4, 10000, 0.01);
-% TW(2).type = 'envelope';
-% TW(1).envNumCycles = 1;
-% TW(1).envFrequency = [0.5];
-% TW(1).envPulseWidth = [0.5];
-% Specify TX structure array.
+
 TX(1).waveform = 1; % use 1st TW structure.
 TX(1).focus = 0;
 TX(1).Apod = zeros([1,Resource.Parameters.rx_channel]);
 TX(1).Apod(tx_channel)=1;
 TX(1).Delay = computeTXDelays(TX(1));
-
-% TX(2).waveform = 2; % use 1st TW structure.
-% TX(2).focus = 0;
-% TX(2).Apod = zeros([1,Resource.Parameters.rx_channel]);
-% TX(2).Apod(tx_channel)=1;
-% TX(2).Delay = computeTXDelays(TX(2));
 
 TPC(1).hv = Vpp;
 
@@ -95,7 +83,7 @@ TGC(1).Waveform = computeTGCWaveform(TGC);
 
 % Specify Receive structure array -
 Apod = zeros([1,Resource.Parameters.rx_channel]); % if 64ch Vantage, = [ones(1,64) zeros(1,64)];
-Apod([Resource.Parameters.tx_channel,Resource.Parameters.rx_channel])=1;
+Apod([Resource.Parameters.tx_channel, Resource.Parameters.rx_channel])=1;
 
 % Specify Receive structure array -
 Receive = repmat(struct(...
@@ -127,7 +115,7 @@ Process(1).Parameters = {'srcbuffer','receive',... % name of buffer to process.
 'dstbuffer','none'};
 
 Process(2).classname = 'External';
-Process(2).method = 'extern_get_soniq_waveform';
+Process(2).method = 'extern_set_voltage';
 Process(2).Parameters = {'srcbuffer','receive',... % name of buffer to process.
 'srcbufnum',1,...
 'srcframenum',-1,...
@@ -172,17 +160,17 @@ for i = 1:Resource.RcvBuffer(1).numFrames
 %     Event(n).seqControl = 0;
 %     n = n+1;
 
-%             Event(n).info = 'Wait';
-%         Event(n).tx = 0; 
-%         Event(n).rcv = 0;
-%         Event(n).recon = 0;
-%         Event(n).process = 0;
-%         Event(n).seqControl = nsc;
-%             SeqControl(nsc).command = 'noop';
-%             SeqControl(nsc).argument = (positionerDelay*1e-3)/200e-9;
-%             SeqControl(nsc).condition = 'Hw&Sw';
-%             nsc = nsc+1;
-%         n = n+1;
+            Event(n).info = 'Wait';
+        Event(n).tx = 0; 
+        Event(n).rcv = 0;
+        Event(n).recon = 0;
+        Event(n).process = 0;
+        Event(n).seqControl = nsc;
+            SeqControl(nsc).command = 'noop';
+            SeqControl(nsc).argument = (positionerDelay*1e-3)/200e-9;
+            SeqControl(nsc).condition = 'Hw&Sw';
+            nsc = nsc+1;
+        n = n+1;
 
 end
 

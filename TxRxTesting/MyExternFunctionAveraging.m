@@ -12,15 +12,17 @@ function MyExternFunctionAveraging(RData)
         myHandleReceive = axes('NextPlot','replacechildren');
     end
     tx_channel = Resource.Parameters.tx_channel;
-    data = getTxRxData(RData, Resource, Receive);
+    [rx_data, tx_data] = get_frame_acq(RData, Resource, Receive, 1);
+
+    
     
     title(myHandle, strcat(['Channel ', num2str(tx_channel)]));
     
-    plot(myHandle, data.tx_data(1,:));
+    plot(myHandle, tx_data(1,:));
 
     rx_channel = Resource.Parameters.rx_channel;
     title(myHandleReceive, strcat(['Channel ', num2str(rx_channel)]));
-    plot(myHandleReceive, data.rx_data(1,:));
+    plot(myHandleReceive, rx_data(1,:));
 
     drawnow;
     return

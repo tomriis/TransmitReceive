@@ -13,7 +13,7 @@ desiredDepth = 155; % Desired depth in mm
 endDepth = desiredDepth;
 rx_channel = 100;
 tx_channel = 1;
-Vpp = 17;
+Vpp = 50;
 
 %% Setup System
 % Since there are often long pauses after moving the positioner
@@ -76,7 +76,10 @@ assignin('base','Trans',Trans);
 assignin('base','Resource',Resource);
 TX(1).Delay = computeTXDelays(TX(1));
 
-TX(2).waveform = 1; % use 1st TW structure.
+TW(2).type = 'parametric';
+TW(2).Parameters = [0.65,0.67,num_half_cycles,1]; % A, B, C, D
+
+TX(2).waveform = 2; % use 1st TW structure.
 TX(2).focus = 0;
 TX(2).Apod = zeros([1,Resource.Parameters.rx_channel]);
 TX(2).Apod(rx_channel)=1;
@@ -151,7 +154,7 @@ for ii = 1:nFrames
         if jj < NA/2
             Event(n).tx = 1;
         else
-            Event(n).tx = 1;
+            Event(n).tx = 2;
         end
         Event(n).rcv = idx;
         Event(n).seqControl = [1,nsc];
@@ -212,7 +215,8 @@ end
 %     nsc = ni
 % n = n+1;
 
-Event(n).info = 'close';
+
+Event(n).info = 'close it down';
 Event(n).tx = 0; % no TX structure.
 Event(n).rcv = 0; % no Rcv structure.
 Event(n).recon = 0; % no reconstruction.
