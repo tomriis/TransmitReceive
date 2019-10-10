@@ -9,9 +9,16 @@ function [rx_data, tx_data] = get_frame_acq(RcvData, Resource, Receive, frame_nu
     tx_data = zeros([numAvg, n_samples_per_frame]);
     for j = 1:numAvg
         idx = (frame_number-1)*numAvg+j;
-        rx_data(j,:) = RcvData{1}((Receive(idx).startSample:Receive(idx).endSample),...,
-            rx_channel, frame_number);
-        tx_data(j,:) = RcvData{1}(Receive(idx).startSample:Receive(idx).endSample,...,
-            tx_channel, frame_number);
+        if iscell(RcvData)
+            rx_data(j,:) = RcvData{1}((Receive(idx).startSample:Receive(idx).endSample),...,
+                rx_channel, frame_number);
+            tx_data(j,:) = RcvData{1}(Receive(idx).startSample:Receive(idx).endSample,...,
+                tx_channel, frame_number);
+        else
+             rx_data(j,:) = RcvData((Receive(idx).startSample:Receive(idx).endSample),...,
+                rx_channel);
+             tx_data(j,:) = RcvData(Receive(idx).startSample:Receive(idx).endSample,...,
+                tx_channel);
+        end
     end
 end

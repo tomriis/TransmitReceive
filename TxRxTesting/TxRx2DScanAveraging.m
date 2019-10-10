@@ -3,12 +3,13 @@ evalin('base','clear all');
 NA = 15;
 NA = 2*NA;
 nFrames = 10;
+positionerDelay = 100; % Positioner delay in ms
 frame_rate = 5;
 rate = 0.008; % ms delay per step
 centerFrequency = 0.5; % Frequency in MHz
-num_half_cycles = 1; % Number of half cycles to use in each pulse
+num_half_cycles = 4; % Number of half cycles to use in each pulse
 desiredDepth = 155; % Desired depth in mm
-rx_channel = 100;
+rx_channel = 96;
 tx_channel = 1;
 Vpp = 17;
 
@@ -60,22 +61,14 @@ Resource.RcvBuffer(1).numFrames = nFrames; % minimum size is 1 frame.
 
 % Specify Transmit waveform structure.
 TW(1).type = 'parametric';
-TW(1).Parameters = [centerFrequency,0.67,num_half_cycles,1]; % A, B, C, D
+TW(1).Parameters = [centerFrequency,0.37,num_half_cycles,1]; % A, B, C, D
 
 % Specify TX structure array.
 TX(1).waveform = 1; % use 1st TW structure.
 TX(1).focus = 0;
 TX(1).Apod = zeros([1,Resource.Parameters.rx_channel]);
 TX(1).Apod(tx_channel)=1;
-assignin('base','Trans',Trans);
-assignin('base','Resource',Resource);
 TX(1).Delay = computeTXDelays(TX(1));
-
-TX(2).waveform = 1; % use 1st TW structure.
-TX(2).focus = 0;
-TX(2).Apod = zeros([1,Resource.Parameters.rx_channel]);
-TX(2).Apod(rx_channel)=1;
-TX(2).Delay = computeTXDelays(TX(1));
 
 TPC(1).hv = Vpp;
 
@@ -111,90 +104,103 @@ for ii = 1:nFrames
     end
 end
 
-% Specify an external processing event.
-% Specify an external processing event.
-Process(1).classname = 'External';
-Process(1).method = 'myExternFunctionAveraging';
-Process(1).Parameters = {'srcbuffer','receive',... % name of buffer to process.
-'srcbufnum',1,...
-'srcframenum',-1,...
-'dstbuffer','none'};
-
-Process(2).classname = 'External';
-Process(2).method = 'external_quit';
-Process(2).Parameters = {'srcbuffer','receive',... % name of buffer to process.
-'srcbufnum',1,...
-'srcframenum',-1,...
-'dstbuffer','none'};
-
-n = 1;
-
-
 firstEvent.info = 'Acquire RF Data.';
 firstEvent.tx = 1; % use 1st TX structure.
 firstEvent.rcv = 1; % use 1st Rcv structure.
 firstEvent.recon = 0; % no reconstruction.
 firstEvent.process = 0; % no processing
 firstEvent.seqControl = [1];
+% SeqControl(1).command = 'timeToNextAcq';
+% SeqControl(1).argument = 1/(frame_rate)*1e6; % wait time in microseconds
+% %  
+%     
+% SeqControl(2).command = 'jump';
+% SeqControl(2).condition = 'exitAfterJump';
+% SeqControl(2).argument = Resource.RcvBuffer(1).numFrames+1;
+% nsc = 3;
+Process(1).classname = 'External';
+Process(1).method = 'MyExternFunctionAveraging';
+Process(1).Parameters = {'srcbuffer','receive',... % name of buffer to process.
+'srcbufnum',1,...
+'srcframenum',-1,...
+'dstbuffer','none'};
+
 SeqControl(1).command = 'timeToNextAcq';
-SeqControl(1).argument = 1/(frame_rate)*1e6; % wait time in microseconds
- 
-    
+SeqControl(1).argument = 1/(1000)*1e6; % wait time in microseconds
+
 SeqControl(2).command = 'jump';
 SeqControl(2).condition = 'exitAfterJump';
 SeqControl(2).argument = 2*Resource.RcvBuffer(1).numFrames+1;
- nsc = 3;
+
+SeqControl(3).command = 'triggerOut';
+
+nsc = 4; % start index for new SeqControl
+
+n = 1; % start index for Events
+
+
 for ii = 1:nFrames
     for jj = 1:NA
         idx = (ii-1)*NA+jj;
-        Event(n) = firstEvent;
+        Event(n).info = 'Acquire RF Data.';
+        Event(n).tx = 1; % use 1st TX structure.
+        Event(n).rcv = 1; % use unique Receive for each frame.
+        Event(n).recon = 0; % no reconstruction.
+        Event(n).process = 0; % no processing
         if jj < NA/2
             Event(n).tx = 1;
         else
             Event(n).tx = 1;
         end
         Event(n).rcv = idx;
-        Event(n).seqControl = [1,nsc];
+        Event(n).seqControl = [1,3,nsc];
          SeqControl(nsc).command = 'transferToHost';
            nsc = nsc + 1;
         n = n+1;
     end
-%         Event(n).info = 'Sync before moving';
-%         Event(n).tx = 0; 
-%         Event(n).rcv = 0;
-%         Event(n).recon = 0;
-%         Event(n).process = 0;
-%         Event(n).seqControl = nsc; 
-%             SeqControl(nsc).command = 'sync';
-%             nsc = nsc+1;
-%         n = n+1;
-        
-        Event(n).info = 'Plot Data.';
+    
+    
+    Event(n).info = 'Call external Processing function.';
+    Event(n).tx = 0; % no TX structure.
+    Event(n).rcv = 0; % no Rcv structure.
+    Event(n).recon = 0; % no reconstruction.
+    Event(n).process = 1; % call processing function
+    Event(n).seqControl = 0;
+    n = n+1;
+    
+            Event(n).info = 'Wait';
         Event(n).tx = 0; 
         Event(n).rcv = 0;
         Event(n).recon = 0;
-        Event(n).process = 1;
-        % Need to sync or the verasonics system will acquire data faster 
-        % than the positioner moves
-%       Event(n).seqControl = nsc; 
-%             SeqControl(nsc).command = 'sync';
-%             nsc = nsc+1;
+        Event(n).process = 0;
+        Event(n).seqControl = nsc;
+            SeqControl(nsc).command = 'noop';
+            SeqControl(nsc).argument = (positionerDelay*1e-3)/200e-9;
+            SeqControl(nsc).condition = 'Hw&Sw';
+            nsc = nsc+1;
         n = n+1;
-        
-        % Set a delay after moving the positioner.
-%         Event(n).info = 'Wait';
-%         Event(n).tx = 0; 
-%         Event(n).rcv = 0;
-%         Event(n).recon = 0;
-%         Event(n).process = 0;
-%         Event(n).seqControl = nsc;
-%             SeqControl(nsc).command = 'noop';
-%             SeqControl(nsc).argument = (positioner_delays(ii))/200e-9;
-%             SeqControl(nsc).condition = 'Hw&Sw';
-%             nsc = nsc+1;
-%         n = n+1;
+
 end
 
+for i = 1:Resource.RcvBuffer(1).numFrames
+    Event(n).info = 'Acquire RF Data.';
+    Event(n).tx = 1; % use 1st TX structure.
+    Event(n).rcv = i; % use unique Receive for each frame.
+    Event(n).recon = 0; % no reconstruction.
+    Event(n).process = 0; % no processing
+    Event(n).seqControl = [1,3,nsc]; % set TTNA time and transfer
+    SeqControl(nsc).command = 'transferToHost';
+    nsc = nsc + 1;
+    n = n+1;
+    
+    Event(n).info = 'Call external Processing function.';
+    Event(n).tx = 0; % no TX structure.
+    Event(n).rcv = 0; % no Rcv structure.
+    Event(n).recon = 0; % no reconstruction.
+    Event(n).process = 1; % call processing function
+    Event(n).seqControl = 0;
+    n = n+1;
+end
 
 Event(n).info = 'Jump back to Event 1.';
 Event(n).tx = 0; % no TX structure.
@@ -204,19 +210,9 @@ Event(n).process = 0; % no processing
 Event(n).seqControl = 2; % jump back to Event 1.
 
 
-% Event(n).info = 'close this bitch down';
-% Event(n).tx = 0; % no TX structure.
-% Event(n).rcv = 0; % no Rcv structure.
-% Event(n).recon = 0; % no reconstruction.
-% Event(n).process = 2; % call processing function
-
-EF(1).Function = {'external_quit(RData)',...
-'VsClose',...
-'return',...
-};
-
 % Save all the structures to a .mat file.
 svName = 'C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\TxRx2DScanAveraging';
+save(svName);
 filename = svName;
 VSX
 return

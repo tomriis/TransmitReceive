@@ -74,30 +74,6 @@ TX(1).Apod = zeros([1,Resource.Parameters.rx_channel]);
 TX(1).Apod(tx_channel)=1;
 TX(1).Delay = computeTXDelays(TX(1));
 
-% for i = 1:length(Resource.Parameters.frequency_array)
-%     TW(i) = TW(1);
-%     TX(i) = TX(1);
-%     TW(i).Parameters(1) = Resource.Parameters.frequency_array(i);
-%     TX(1).waveform = i; % use 1st TW structure.
-% end
-%TW2 = waveform_parameters_to_envelope(5e6, 0.4, 10000, 0.01);
-% TW(2).type = 'envelope';
-% TW(1).envNumCycles = 1;
-% TW(1).envFrequency = [0.5];
-% TW(1).envPulseWidth = [0.5];
-% Specify TX structure array.
-TX(1).waveform = 1; % use 1st TW structure.
-TX(1).focus = 0;
-TX(1).Apod = zeros([1,Resource.Parameters.rx_channel]);
-TX(1).Apod(tx_channel)=1;
-TX(1).Delay = computeTXDelays(TX(1));
-
-% TX(2).waveform = 2; % use 1st TW structure.
-% TX(2).focus = 0;
-% TX(2).Apod = zeros([1,Resource.Parameters.rx_channel]);
-% TX(2).Apod(tx_channel)=1;
-% TX(2).Delay = computeTXDelays(TX(2));
-
 TPC(1).hv = Vpp;
 
 % Specify TGC Waveform structure.
@@ -176,13 +152,13 @@ for i = 1:Resource.RcvBuffer(1).numFrames
     Event(n).seqControl = 0;
     n = n+1;
     
-    Event(n).info = 'Call external Processing function 2.';
-    Event(n).tx = 0; % no TX structure.
-    Event(n).rcv = 0; % no Rcv structure.
-    Event(n).recon = 0; % no reconstruction.
-    Event(n).process = 2; % call processing function
-    Event(n).seqControl = 0;
-    n = n+1;
+%     Event(n).info = 'Call external Processing function 2.';
+%     Event(n).tx = 0; % no TX structure.
+%     Event(n).rcv = 0; % no Rcv structure.
+%     Event(n).recon = 0; % no reconstruction.
+%     Event(n).process = 2; % call processing function
+%     Event(n).seqControl = 0;
+%     n = n+1;
 
             Event(n).info = 'Wait';
         Event(n).tx = 0; 
