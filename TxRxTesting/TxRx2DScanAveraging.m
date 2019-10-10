@@ -9,8 +9,8 @@ rate = 0.008; % ms delay per step
 centerFrequency = 0.5; % Frequency in MHz
 num_half_cycles = 4; % Number of half cycles to use in each pulse
 desiredDepth = 155; % Desired depth in mm
-rx_channel = 96;
-tx_channel = 1;
+rx_channel = 97;
+tx_channel = 82;
 Vpp = 17;
 
 %% Setup System
