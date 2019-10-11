@@ -11,5 +11,4 @@ function n_pos = reorder_pos(positions)
             count = 2;
         end
     end
-        
 end
