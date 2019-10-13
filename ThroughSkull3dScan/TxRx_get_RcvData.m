@@ -8,7 +8,7 @@ function TxRx_get_RcvData(RcvData)
     % Calculate positions from steps
     position_steps = app.position_steps;
     for i = 0:size(data.positions,2)-1
-        data.positions_calc(end-i,:) = Resource.Parameters.app.positions(1,:) + sum(position_steps(2:end-i,:),1).*app.scale;
+        data.positions_calc(end-i,:) = app.ND_scan.positions(1,:) + sum(position_steps(2:end-i,:),1).*app.scale;
     end
     assignin('base','data',data);
 end

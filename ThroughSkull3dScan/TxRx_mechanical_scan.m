@@ -5,7 +5,7 @@ NA = 15;
 NA = 2*NA;
 nFrames = size(positions,1);
 prf = 1000;
-rate = 0.008; % ms delay per step
+rate = 0.006; % ms delay per step
 positioner_delays = get_positioner_delays(app, positions,rate); % Positioner delay in ms
 centerFrequency = 0.5; % Frequency in MHz
 num_half_cycles = 1; % Number of half cycles to use in each pulse
@@ -13,7 +13,7 @@ desiredDepth = 155; % Desired depth in mm
 endDepth = desiredDepth;
 rx_channel = 100;
 tx_channel = 1;
-Vpp = 50;
+Vpp = 7;
 
 %% Setup System
 % Since there are often long pauses after moving the positioner

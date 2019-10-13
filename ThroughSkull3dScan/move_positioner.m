@@ -9,7 +9,11 @@ function d_steps = move_positioner(app, current_pos,next_pos)
         
     for i = 1:3
         if i == 3
-            stepper_motor_inc(abs(d_steps(i)),app.connected_arduino, pins{i}{1}, pins{i}{2}, d_steps(i)>0, 15000);
+            stepper_motor_inc(abs(d_steps(i)),app.connected_arduino, pins{i}{1}, pins{i}{2}, d_steps(i)>0, 50000);
+        elseif i == 2
+            stepper_motor_inc(0,app.connected_arduino, 1, 1, 0, 0);
+            stepper_motor_inc(abs(d_steps(i)),app.connected_arduino, pins{i}{1}, pins{i}{2}, d_steps(i)>0, 50000);
+            stepper_motor_inc(0,app.connected_arduino, 0, 0, 0, 0);
         else
             stepper_motor_inc(abs(d_steps(i)),app.connected_arduino, pins{i}{1}, pins{i}{2}, d_steps(i)>0);
         end
