@@ -3,7 +3,12 @@ evalin('base','clear all');
 %% User defined Scan Parameters
 NA = 15;
 NA = 2*NA;
-nFrames = size(positions,1);
+nPositions = size(positions,1);
+if mod(nPositions,2) == 0
+    nFrames = nPositions;
+else
+    nFrames = nPositions + 1;
+end
 prf = 1000;
 rate = 0.006; % ms delay per step
 positioner_delays = get_positioner_delays(app, positions,rate); % Positioner delay in ms
@@ -147,7 +152,7 @@ firstEvent.seqControl = [1,2];
     SeqControl(nsc).argument = (1/prf)*1e6;
     nsc = nsc+1;
 
-for ii = 1:nFrames
+for ii = 1:nPositions
     for jj = 1:NA
         idx = (ii-1)*NA+jj;
         Event(n) = firstEvent;
@@ -162,7 +167,7 @@ for ii = 1:nFrames
            nsc = nsc + 1;
         n = n+1;
     end
-    if ii < nFrames
+    if ii < nPositions
 %         Event(n).info = 'Sync before moving';
 %         Event(n).tx = 0; 
 %         Event(n).rcv = 0;

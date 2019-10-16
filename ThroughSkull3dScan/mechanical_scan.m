@@ -1,7 +1,6 @@
 function mechanical_scan(app)
-    dx = app.ND_scan.stop-app.ND_scan.start;
-    output_filename_base=['C:\Users\Verasonics\Documents\VerasonicsScanFiles\MechanicalScan\2DScan5\e',...,
-        '2Dscan_',num2str(dx(1)),'_',num2str(dx(2)),'_',num2str(dx(3)),'_'];
+    
+    output_filename_base=app.output_filename_base;
     output_file_name_param = [output_filename_base,'parameters','.mat'];
     positions = app.ND_scan.positions;
     n_positions = size(positions, 1);
@@ -14,6 +13,7 @@ function mechanical_scan(app)
     for i = 1:n_scans
         idx = (i-1)*max_positions_per_scan + 1;
         d_steps = move_positioner(app, last_position, positions(idx, :));
+        
         app.position_steps(end+1,:) = d_steps;
         current_positions = positions(idx:idx+max_positions_per_scan-1,:);
         disp(['On ',num2str(idx),' of ', num2str(n_positions)]);
@@ -27,7 +27,7 @@ function mechanical_scan(app)
         end
             
         last_position = current_positions(end,:);
-        output_file_name = [output_filename_base,num2str(i)];
+        output_file_name = [output_filename_base,num2str(i),'.mat'];
         Resource = evalin('base','Resource');
         app.position_steps = Resource.Parameters.app.position_steps;
         evalin('base','TxRx_get_RcvData(RcvData)')
