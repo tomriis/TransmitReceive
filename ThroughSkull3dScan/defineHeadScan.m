@@ -6,13 +6,13 @@ function app = defineHeadScan(app, locs)
    app.positions_cell{3} = positions;
 
    x_center = locs{1}(floor(app.ND_scan.steps(1)/2));
-   scanAngle = 55;
-   theta_range = linspace(scanAngle,(90-scanAngle)*2+scanAngle, 5);
+   scanAngle = 35;
+   theta_range = linspace(scanAngle,(90-scanAngle)*2+scanAngle, 22);
    [LOCS1,LOCS2,LOCS3] = ndgrid(x_center,locs{2},theta_range);
    positions = reorder_pos(get_positions(LOCS1,LOCS2,LOCS3));
    app.positions_cell{2} = positions;
 
    [LOCS1,LOCS2,LOCS3] = ndgrid(x_center,locs{2},180+theta_range);
-   positions = get_positions(LOCS1,LOCS2,LOCS3);
+   positions = reorder_pos(get_positions(LOCS1,LOCS2,LOCS3));
    app.positions_cell{4} = positions; 
 end

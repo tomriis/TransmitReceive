@@ -11,7 +11,7 @@ num_half_cycles = 4; % Number of half cycles to use in each pulse
 desiredDepth = 155; % Desired depth in mm
 rx_channel = 97;
 tx_channel = 82;
-Vpp = 17;
+Vpp = 5;
 
 %% Setup System
 % Since there are often long pauses after moving the positioner

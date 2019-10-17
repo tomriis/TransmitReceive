@@ -1,9 +1,10 @@
 function TxRx_mechanical_scan(positions, app)
 evalin('base','clear all');
 %% User defined Scan Parameters
-NA = 15;
+NA = 20;
 NA = 2*NA;
 nPositions = size(positions,1);
+disp(['num positions', num2str(nPositions)]);
 if mod(nPositions,2) == 0
     nFrames = nPositions;
 else
@@ -13,12 +14,12 @@ prf = 1000;
 rate = 0.006; % ms delay per step
 positioner_delays = get_positioner_delays(app, positions,rate); % Positioner delay in ms
 centerFrequency = 0.5; % Frequency in MHz
-num_half_cycles = 1; % Number of half cycles to use in each pulse
+num_half_cycles = 20; % Number of half cycles to use in each pulse
 desiredDepth = 155; % Desired depth in mm
 endDepth = desiredDepth;
-rx_channel = 100;
-tx_channel = 1;
-Vpp = 7;
+rx_channel = 97;
+tx_channel = 82;
+Vpp = 30;
 
 %% Setup System
 % Since there are often long pauses after moving the positioner
@@ -53,9 +54,9 @@ Trans.units = 'mm';
 Trans.lensCorrection = 1;
 %Trans.Bandwidth = [0,3]; % Set to 0.6 of center frequency by default
 Trans.type = 0;
-Trans.numelements = Resource.Parameters.rx_channel;
+Trans.numelements = max(Resource.Parameters.rx_channel, Resource.Parameters.tx_channel);
 Trans.elementWidth = 24;
-Trans.ElementPos = ones(Resource.Parameters.rx_channel,5);
+Trans.ElementPos = ones(Trans.numelements,5);
 Trans.ElementSens = ones(101,1);
 Trans.connType = 1;
 Trans.Connector = (1:Trans.numelements)';
@@ -82,7 +83,7 @@ assignin('base','Resource',Resource);
 TX(1).Delay = computeTXDelays(TX(1));
 
 TW(2).type = 'parametric';
-TW(2).Parameters = [0.65,0.67,num_half_cycles,1]; % A, B, C, D
+TW(2).Parameters = [0.5,0.67,2,1]; % A, B, C, D
 
 TX(2).waveform = 2; % use 1st TW structure.
 TX(2).focus = 0;
@@ -111,7 +112,7 @@ firstReceive.bufnum = 1;
 firstReceive.framenum = 1;
 firstReceive.acqNum = 1;
 firstReceive.sampleMode = 'custom';
-firstReceive.decimSampleRate = 30*Trans.frequency;
+firstReceive.decimSampleRate = 40*Trans.frequency;
 firstReceive.LowPassCoef = [];
 firstReceive.InputFilter = [];
 
@@ -185,9 +186,9 @@ for ii = 1:nPositions
         Event(n).process = 1;
         % Need to sync or the verasonics system will acquire data faster 
         % than the positioner moves
-%       Event(n).seqControl = nsc; 
-%             SeqControl(nsc).command = 'sync';
-%             nsc = nsc+1;
+      Event(n).seqControl = nsc; 
+            SeqControl(nsc).command = 'sync';
+            nsc = nsc+1;
         n = n+1;
         
         % Set a delay after moving the positioner.
@@ -206,19 +207,19 @@ for ii = 1:nPositions
 end
 
 
-% Event(n).info = 'Call external Processing function.';
-% Event(n).tx = 0; % no TX structure.
-% Event(n).rcv = 0; % no Rcv structure.
-% Event(n).recon = 0; % no reconstruction.
-% Event(n).process = 0; % call processing function
-% Event(n).seqControl = [nsc,nsc+1]; % wait for data to be transferred
-%     SeqControl(nsc).command = 'waitForTransferComplete';
-%     SeqControl(nsc).argument = 2;
-%     nsc = nsc+1;
-%     SeqControl(nsc).command = 'markTransferProcessed';
-%     SeqControl(nsc).argument = 2;
-%     nsc = ni
-% n = n+1;
+Event(n).info = 'Wait for transfer.';
+Event(n).tx = 0; % no TX structure.
+Event(n).rcv = 0; % no Rcv structure.
+Event(n).recon = 0; % no reconstruction.
+Event(n).process = 0; 
+Event(n).seqControl = [nsc,nsc+1]; % wait for data to be transferred
+    SeqControl(nsc).command = 'waitForTransferComplete';
+    SeqControl(nsc).argument = 2;
+    nsc = nsc+1;
+    SeqControl(nsc).command = 'markTransferProcessed';
+    SeqControl(nsc).argument = 2;
+    nsc = nsc + 1;
+n = n+1;
 
 
 Event(n).info = 'close it down';

@@ -2,13 +2,11 @@ function TxRx_get_RcvData(RcvData)
     Resource = evalin('base','Resource');
     Receive = evalin('base','Receive');
     app =Resource.Parameters.app;
+    position_steps = app.position_steps;
+    
     data = getTxRxData(RcvData, Resource, Receive);
     data.positions = Resource.Parameters.positions;
-    data.positions_calc = zeros(size(data.positions));
-    % Calculate positions from steps
-    position_steps = app.position_steps;
-    for i = 0:size(data.positions,2)-1
-        data.positions_calc(end-i,:) = app.ND_scan.positions(1,:) + sum(position_steps(2:end-i,:),1).*app.scale;
-    end
+    %data.positions_steps = position_steps(end-size(data.positions,1)-1:end,:);
+    
     assignin('base','data',data);
 end
