@@ -1,4 +1,4 @@
-data_directory = 'C:\Users\Tom\Documents\MATLAB\2DScan4\';
+data_directory = 'C:\Users\Tom\Documents\MATLAB\2DScan6\';
 Receive = evalin('base','Receive');
 Resource = evalin('base','Resource');
 scale_mm_per_voxel = 1;
@@ -15,7 +15,8 @@ data = set_data_xyz_position(all_data, L/2);
 
 x1 = 600;
 x2 = 2550;
-c_data = zero_data(data,x1, x2);
+
+c_data = zero_data(data, x1, x2);
 
 data_length_mm = length(c_data(1).tx)*1/fs*c*1000/2;
 N_data = round(1/scale_mm_per_voxel*data_length_mm);
