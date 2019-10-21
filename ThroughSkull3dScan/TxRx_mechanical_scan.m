@@ -1,5 +1,5 @@
 function TxRx_mechanical_scan(positions, app)
-evalin('base','clear all');
+evalin('base','clear');
 %% User defined Scan Parameters
 NA = 20;
 NA = 2*NA;
@@ -10,16 +10,16 @@ if mod(nPositions,2) == 0
 else
     nFrames = nPositions + 1;
 end
-prf = 1000;
-rate = 0.006; % ms delay per step
+prf = 500;
+rate = 0.007; % ms delay per step
 positioner_delays = get_positioner_delays(app, positions,rate); % Positioner delay in ms
 centerFrequency = 0.5; % Frequency in MHz
-num_half_cycles = 20; % Number of half cycles to use in each pulse
+num_half_cycles = 12; % Number of half cycles to use in each pulse
 desiredDepth = 155; % Desired depth in mm
 endDepth = desiredDepth;
 rx_channel = 97;
 tx_channel = 82;
-Vpp = 30;
+Vpp = 35;
 
 %% Setup System
 % Since there are often long pauses after moving the positioner
@@ -38,6 +38,8 @@ Resource.Parameters.rx_channel = rx_channel;
 Resource.Parameters.tx_channel = tx_channel;
 Resource.Parameters.positions = positions;
 Resource.Parameters.fakeScanhead = 1;
+Resource.Parameters.verbose = 3;
+Resource.Parameters.failed = 0;
 % Resource.Parameters.simulateMode = 1; % runs script in simulate mode
 RcvProfile.AntiAliasCutoff = 10; %allowed values are 5, 10, 15, 20, and 30
 %RcvProfile.PgaHPF = 80; %enables the integrator feedback path, 0 disables
@@ -88,7 +90,7 @@ TW(2).Parameters = [0.5,0.67,2,1]; % A, B, C, D
 TX(2).waveform = 2; % use 1st TW structure.
 TX(2).focus = 0;
 TX(2).Apod = zeros([1,Resource.Parameters.rx_channel]);
-TX(2).Apod(rx_channel)=1;
+TX(2).Apod(tx_channel)=1;
 TX(2).Delay = computeTXDelays(TX(1));
 
 TPC(1).hv = Vpp;
@@ -202,7 +204,10 @@ for ii = 1:nPositions
             SeqControl(nsc).argument = (positioner_delays(ii))/200e-9;
             SeqControl(nsc).condition = 'Hw&Sw';
             nsc = nsc+1;
-        n = n+1;
+            SeqControl(nsc).command = 'timeToNextAcq';
+            SeqControl(nsc).argument = 0.405*1e6;
+            nsc = nsc+1;
+         n = n+1;
     end
 end
 

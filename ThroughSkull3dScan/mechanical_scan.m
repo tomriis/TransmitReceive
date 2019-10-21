@@ -59,6 +59,5 @@ function app = mechanical_scan(app)
             end
     end
     
-    evalin('base', sprintf('save(''%s'', ''Resource'')', output_file_name_param));
-    save('C:\Users\Verasonics\Documents\MATLAB\n_mechanical_scan.mat');
+    evalin('base', sprintf('save(''%s'', ''Resource'',''Receive'')', output_file_name_param));
 end

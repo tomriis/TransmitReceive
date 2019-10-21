@@ -6,6 +6,7 @@ function TxRx_get_RcvData(RcvData)
     
     data = getTxRxData(RcvData, Resource, Receive);
     data.positions = Resource.Parameters.positions;
+    data.failed = Resource.Parameters.failed;
     %data.positions_steps = position_steps(end-size(data.positions,1)-1:end,:);
     
     assignin('base','data',data);
