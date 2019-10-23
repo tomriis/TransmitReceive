@@ -3,23 +3,32 @@ h = figure;
 m_plot = 3;
 n_plot = 4;
 p = 1;
-all_data = evalin('base','all_data');
-x1 = evalin('base','x1'); x2 = evalin('base','x2');
-fs = evalin('base','fs');
+tx_i = 2;
 
-Ns = length(all_data(1).xdr_1);
-t= (1/fs:1/fs:(Ns*1/fs))*1e6;
-x = (1:Ns)*1540e3/fs/2/10; %cm
+fs = evalin('base','fs');
+xcorr_signal = evalin('base','xcorr_signal');
+
+nSamples = length(data(1).xdr_1);
+t= (1/fs:1/fs:(nSamples*1/fs))*1e6;
+x = (1:nSamples)*1540e3/fs/2; %cm
 
 %subplot(m_plot, n_plot, p);
-f_rx = data.rx;
+f_rx = data.xdr_1(tx_i,:);
 
-f = data.tx;
-% f_rx(1:50)=0; f(1:50)=0;
-plot(t, f,'DisplayName','Tx'); hold on;
-plot(t,f_rx,'DisplayName','Rx');
-title('Windowed');
-xlabel('t (us)');
+f = data.xdr_1(tx_i,:);
+
+[c, lags] = xcorr(f, xcorr_signal(tx_i,:));
+c = c(lags>0);
+lags = lags(lags>0);
+plot(x, f,'DisplayName','Tx'); hold on;
+corr_marker = zeros(1,nSamples);
+corr_marker(data.echo_i) = max(f);
+
+plot(lags*1/fs*1000*1540/2,c/max(c)*max(f))
+plot(x, corr_marker); hold on;
+% plot(x,f_rx,'DisplayName','Rx');
+title('Tx Data');
+xlabel('x (mm)');
 legend
 p=p+1;
   
