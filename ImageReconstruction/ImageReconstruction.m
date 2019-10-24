@@ -38,7 +38,7 @@ Ny = round(1/scale_mm_per_voxel*L);
 p = get_unique_positions(c_data);
 Nz = round(1/scale_mm_per_voxel*max(p{3}));
 
-[Vcorr2, c_data] = data_to_image(c_data, Nx, Ny, Nz, N_data, L, xcorr_signal);
+[Vcorr2, c_data] = data_to_image(c_data, Nx, Ny, Nz, N_data, L, xcorr_signal, 1);
 
 
 % V1 = zero_volume_center(V, volume_center_length);
