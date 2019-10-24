@@ -7,7 +7,6 @@ function [ max_i, minPeakHeight ] = findMaxCorrelation(data, xcorr_signal)
     minPeakHeight = u + 1.5*sig;
     minPeakProminence = 0.15 * max(hilbert_c);
     [pks, locs] = findpeaks(hilbert_c,'MinPeakHeight',minPeakHeight,'MinPeakProminence',minPeakProminence);
-    
 
     if ~isempty(locs)    
         max_i = lags(locs(1));

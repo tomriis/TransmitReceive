@@ -13,17 +13,6 @@ function [V, max_corr_i, echo_ijk, line_ijk] = add_data_to_grid(ijk, data, XYZ, 
         line_ijk(i,:) = coordinates_to_index(XYZ,[line(i,:),v(3)]);
     end
     
-%     d = get_binned_data( abs( hilbert( data.xdr_1(tx_i,:) ) ), N_data);
-%     d_std = std(d);
-%     d(d<1*d_std) = 0;
-%     d(d>0)= log(d(d>0));
-%     
-%     [pks, locs] = findpeaks(d);
-%     
-%     if ~isempty(locs)
-%         i = locs(1);
-%         V2(line_ijk(i,1), line_ijk(i,2), line_ijk(i,3)) = 1;
-%     end
     
     [ max_corr_i ] = findMaxCorrelation(data.xdr_1(tx_i,:), xcorr_signal(tx_i,:));
     scalar = max_corr_i/length(data.xdr_1(tx_i,:));

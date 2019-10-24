@@ -3,7 +3,7 @@ h = figure;
 m_plot = 2;
 n_plot = 2;
 p = 1;
-tx_i = 2;
+tx_i = data.tx_i;
 
 
 fs = evalin('base','fs');
