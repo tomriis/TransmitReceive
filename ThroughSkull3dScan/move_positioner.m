@@ -6,8 +6,17 @@ function d_steps = move_positioner(app, current_pos,next_pos, varargin)
     pins = {{app.x_dir_pin, app.x_step_pin};
             {app.y_dir_pin, app.y_step_pin};
             {app.theta_dir_pin, app.theta_step_pin}};
-        
-    for i = 1:3
+    order= 1:3;
+    if ~isempty(varargin)
+        try
+            if varargin{2} == 3
+                order = 3:-1:1;
+            end
+        catch
+        end
+    end
+                
+    for i = order
         if i == 3
             stepper_motor_inc(abs(d_steps(i)),app.connected_arduino, pins{i}{1}, pins{i}{2}, d_steps(i)>0, 10000);
         elseif i == 2

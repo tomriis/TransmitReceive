@@ -19,7 +19,7 @@ desiredDepth = 155; % Desired depth in mm
 endDepth = desiredDepth;
 rx_channel = 97;
 tx_channel = 82;
-Vpp = 35;
+Vpp = 40;
 
 %% Setup System
 % Since there are often long pauses after moving the positioner
@@ -114,7 +114,7 @@ firstReceive.bufnum = 1;
 firstReceive.framenum = 1;
 firstReceive.acqNum = 1;
 firstReceive.sampleMode = 'custom';
-firstReceive.decimSampleRate = 40*Trans.frequency;
+firstReceive.decimSampleRate = 50*Trans.frequency;
 firstReceive.LowPassCoef = [];
 firstReceive.InputFilter = [];
 
@@ -159,7 +159,7 @@ for ii = 1:nPositions
     for jj = 1:NA
         idx = (ii-1)*NA+jj;
         Event(n) = firstEvent;
-        if jj < NA/2
+        if jj <= NA/2
             Event(n).tx = 1;
         else
             Event(n).tx = 2;
