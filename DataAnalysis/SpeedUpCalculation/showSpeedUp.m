@@ -1,23 +1,6 @@
 function [speed_up]=showSpeedUp(data, ws_rx_data, wos_rx_data, fs)
-         h = figure;
-        t = (1:length(ws_rx_data))*1/fs*1e6;
-        plot(ws_rx_data);
-        hold on;
-        plot(wos_rx_data);
-        hold off;
-        legend;
-        title('Create search area and press any key to continue');
-        xlabel('Sample Number');
-        rect = drawrectangle();
-        while true
-            w = waitforbuttonpress;
-            if w==1
-                break;
-            end
-        end
-        positions = rect.Position;
-        close(h);
-        x1 = fix(positions(1)); x2 = fix(positions(1)+positions(3));
+        [x1, x2] = getRxWindow(ws_rx_data, wos_rx_data);
+        
         speed_up = zeros(2,length(data));
         for k = 1:length(data)
             ws_rx_data = data(k).rx;
