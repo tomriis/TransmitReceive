@@ -9,5 +9,5 @@ function TxRx_get_RcvData(RcvData)
     data.failed = Resource.Parameters.failed;
     %data.positions_steps = position_steps(end-size(data.positions,1)-1:end,:);
     
-    assignin('base','data',data);
+    save(filename_mat,'t','wv');
 end
