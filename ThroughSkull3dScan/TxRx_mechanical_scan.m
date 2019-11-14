@@ -13,13 +13,16 @@ end
 prf = 500;
 rate = 0.007; % ms delay per step
 positioner_delays = get_positioner_delays(app, positions,rate); % Positioner delay in ms
+disp('max time');
+disp(max(positioner_delays));
+f = max(positioner_delays);
 centerFrequency = 0.5; % Frequency in MHz
 num_half_cycles = 12; % Number of half cycles to use in each pulse
 desiredDepth = 155; % Desired depth in mm
 endDepth = desiredDepth;
 rx_channel = 97;
 tx_channel = 82;
-Vpp = 35;
+Vpp = 1.6;
 
 %% Setup System
 % Since there are often long pauses after moving the positioner
@@ -114,29 +117,26 @@ firstReceive.bufnum = 1;
 firstReceive.framenum = 1;
 firstReceive.acqNum = 1;
 firstReceive.sampleMode = 'custom';
-firstReceive.decimSampleRate = 40*Trans.frequency;
+firstReceive.decimSampleRate = 50*Trans.frequency;
 firstReceive.LowPassCoef = [];
 firstReceive.InputFilter = [];
 
-for ii = 1:nFrames
-    for jj = 1:NA
-        idx = (ii-1)*NA+jj;
-        Receive(idx) = firstReceive;
-        Receive(idx).acqNum = jj;
-        Receive(idx).framenum = ii;
-    end
+
+for n = 1:NA
+    Receive(n) = firstReceive;
+    Receive(n).acqNum = n;
 end
 
-% Specify an external processing event.
 Process(1).classname = 'External';
-Process(1).method = 'N_dimensional_scan';
+Process(1).method = 'getVerasonicsWaveform';
 Process(1).Parameters = {'srcbuffer','receive',... % name of buffer to process.
 'srcbufnum',1,...
-'srcframenum',-1,...
+'srcframenum',1,...
 'dstbuffer','none'};
 
+% Specify an external processing event.
 Process(2).classname = 'External';
-Process(2).method = 'external_quit';
+Process(2).method = 'movePositionerGridScan';
 Process(2).Parameters = {'srcbuffer','receive',... % name of buffer to process.
 'srcbufnum',1,...
 'srcframenum',-1,...
@@ -155,83 +155,66 @@ firstEvent.seqControl = [1,2];
     SeqControl(nsc).argument = (1/prf)*1e6;
     nsc = nsc+1;
 
-for ii = 1:nPositions
-    for jj = 1:NA
-        idx = (ii-1)*NA+jj;
-        Event(n) = firstEvent;
-        if jj < NA/2
-            Event(n).tx = 1;
-        else
-            Event(n).tx = 2;
-        end
-        Event(n).rcv = idx;
-        Event(n).seqControl = [1,nsc];
-         SeqControl(nsc).command = 'transferToHost';
-           nsc = nsc + 1;
-        n = n+1;
+
+for ii = 1:NA
+    Event(n) = firstEvent;
+    if ii <= NA/2
+        Event(n).tx = 1;
+    else
+        Event(n).tx = 2;
     end
-    if ii < nPositions
-%         Event(n).info = 'Sync before moving';
-%         Event(n).tx = 0; 
-%         Event(n).rcv = 0;
-%         Event(n).recon = 0;
-%         Event(n).process = 0;
-%         Event(n).seqControl = nsc; 
-%             SeqControl(nsc).command = 'sync';
-%             nsc = nsc+1;
-%         n = n+1;
-        
-        Event(n).info = 'Move Positioner.';
-        Event(n).tx = 0; 
-        Event(n).rcv = 0;
-        Event(n).recon = 0;
-        Event(n).process = 1;
-        % Need to sync or the verasonics system will acquire data faster 
-        % than the positioner moves
-      Event(n).seqControl = nsc; 
-            SeqControl(nsc).command = 'sync';
-            nsc = nsc+1;
-        n = n+1;
-        
-        % Set a delay after moving the positioner.
-        Event(n).info = 'Wait';
-        Event(n).tx = 0; 
-        Event(n).rcv = 0;
-        Event(n).recon = 0;
-        Event(n).process = 0;
-        Event(n).seqControl = nsc;
-            SeqControl(nsc).command = 'noop';
-            SeqControl(nsc).argument = (positioner_delays(ii))/200e-9;
-            SeqControl(nsc).condition = 'Hw&Sw';
-            nsc = nsc+1;
-            SeqControl(nsc).command = 'timeToNextAcq';
-            SeqControl(nsc).argument = 0.405*1e6;
-            nsc = nsc+1;
-         n = n+1;
-    end
+    Event(n).rcv = ii;
+    Event(n).seqControl = [1,nsc];
+     SeqControl(nsc).command = 'transferToHost';
+       nsc = nsc + 1;
+    n = n+1;
 end
 
-
-Event(n).info = 'Wait for transfer.';
+Event(n).info = 'Acquire a waveform';
 Event(n).tx = 0; % no TX structure.
 Event(n).rcv = 0; % no Rcv structure.
 Event(n).recon = 0; % no reconstruction.
-Event(n).process = 0; 
-Event(n).seqControl = [nsc,nsc+1]; % wait for data to be transferred
-    SeqControl(nsc).command = 'waitForTransferComplete';
-    SeqControl(nsc).argument = 2;
-    nsc = nsc+1;
-    SeqControl(nsc).command = 'markTransferProcessed';
-    SeqControl(nsc).argument = 2;
-    nsc = nsc + 1;
+Event(n).process = 1; 
 n = n+1;
 
+Event(n).info = 'Move Positioner.';
+Event(n).tx = 0; 
+Event(n).rcv = 0;
+Event(n).recon = 0;
+Event(n).process = 2;
+% Need to sync or the verasonics system will acquire data faster 
+% than the positioner moves
+% Event(n).seqControl = nsc; 
+%     SeqControl(nsc).command = 'sync';
+%     nsc = nsc+1;
+n = n+1;
 
-Event(n).info = 'close it down';
+% Set a delay after moving the positioner.
+Event(n).info = 'Wait';
+Event(n).tx = 0; 
+Event(n).rcv = 0;
+Event(n).recon = 0;
+Event(n).process = 0;
+Event(n).seqControl = nsc;
+    SeqControl(nsc).command = 'noop';
+    SeqControl(nsc).argument = f/200e-9;
+    SeqControl(nsc).condition = 'Hw&Sw';
+    nsc = nsc+1;
+    SeqControl(nsc).command = 'timeToNextAcq';
+    SeqControl(nsc).argument = 0.405*1e6;
+    nsc = nsc+1;
+ n = n+1;
+
+Event(n).info = 'Jump back to Event first Tx Event.';
 Event(n).tx = 0; % no TX structure.
 Event(n).rcv = 0; % no Rcv structure.
 Event(n).recon = 0; % no reconstruction.
-Event(n).process = 2; % call processing function
+Event(n).process = 0; % no processing
+Event(n).seqControl = nsc; % jump back to Event 1
+SeqControl(nsc).command = 'jump';
+SeqControl(nsc).condition = 'exitAfterJump';
+SeqControl(nsc).argument = 1;
+
 
 EF(1).Function = {'external_quit(RData)',...
 'VsClose',...
