@@ -1,4 +1,4 @@
-name = '2DScan6';
+name = '2DScan4';
 data_directory = ['C:\Users\Tom\Documents\MATLAB\', name, '\'];
 control_data_directory = [data_directory,name,'control','\'];
 
@@ -17,16 +17,16 @@ control_data = get_2D_scan_data(control_data_directory, fs);
 
 
 nSamples = length(data(1).xdr_1);
-if 0
+if 1
     [xcorr_window(1), xcorr_window(2)] = getRxWindow(zeros(1,nSamples), control_data(1).xdr_2(1,:));
 else
     xcorr_window = [3098, 3522];
 end
 
-xcorr_signal = c_control_data(1).xdr_2(:,xcorr_window(1):xcorr_window(2));
+xcorr_signal = control_data(1).xdr_2(:,xcorr_window(1):xcorr_window(2));
 xcorr_signal = horzcat(xcorr_signal, zeros(2, nSamples - length(xcorr_signal)));
 
-L = getTransducerSeparation(c_control_data, xcorr_signal, fs, c);
+L = getTransducerSeparation(control_data, xcorr_signal, fs, c);
 
 
 data = set_data_xyz_position(data, L/2);
@@ -43,7 +43,7 @@ Ny = round(1/scale_mm_per_voxel*L);
 p = get_unique_positions(c_data);
 Nz = round(1/scale_mm_per_voxel*max(p{3}));
 
-[Vcorr2, c_data] = data_to_image(c_data, Nx, Ny, Nz, N_data, L, xcorr_signal, 2);
+[Vcorr_4, c_data] = data_to_image(c_data, Nx, Ny, Nz, N_data, L, xcorr_signal, 1);
 
 
 % V1 = zero_volume_center(V, volume_center_length);

@@ -19,6 +19,6 @@ function [V, max_corr_i, echo_ijk, line_ijk] = add_data_to_grid(ijk, data, XYZ, 
     echo_xy = v(1:2) + scalar* [x_end-v(1), y_end-v(2)]*N_data/size(V,1);
     echo_ijk = coordinates_to_index(XYZ,[echo_xy, v(3)]);
     
-    V(echo_ijk(1), echo_ijk(2), echo_ijk(3)) = 1;
+    V(echo_ijk(1), echo_ijk(2), echo_ijk(3)) = data.di(1);
     
 end

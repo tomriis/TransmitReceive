@@ -1,10 +1,20 @@
 function [x1, x2] = getRxWindow(ws_data, wos_data)
     h = figure;
-    plot(ws_data);
-    hold on;
-    plot(wos_data);
+    if isstruct(ws_data)
+        for i = 1:length(ws_data)
+            plot(ws_data(i).xdr_2(1,:)); hold on;
+        end
+    else
+        plot(ws_data);  hold on;
+    end
+    if isstruct(wos_data)
+        for i = 1:length(wos_data)
+            plot(wos_data(i).xdr_2(1,:),'black-'); hold on;
+        end
+    else
+        plot(wos_data);
+    end
     hold off;
-    legend;
     title('Create search area and press any key to continue');
     xlabel('Sample Number');
     rect = drawrectangle();
