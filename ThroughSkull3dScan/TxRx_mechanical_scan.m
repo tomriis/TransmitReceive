@@ -5,11 +5,7 @@ NA = 20;
 NA = 2*NA;
 nPositions = size(positions,1);
 disp(['num positions', num2str(nPositions)]);
-if mod(nPositions,2) == 0
-    nFrames = nPositions;
-else
-    nFrames = nPositions + 1;
-end
+nFrames = 2;
 prf = 500;
 rate = 0.007; % ms delay per step
 positioner_delays = get_positioner_delays(app, positions,rate); % Positioner delay in ms
@@ -22,7 +18,7 @@ desiredDepth = 155; % Desired depth in mm
 endDepth = desiredDepth;
 rx_channel = 97;
 tx_channel = 82;
-Vpp = 1.6;
+Vpp = 40;
 
 %% Setup System
 % Since there are often long pauses after moving the positioner
@@ -41,7 +37,6 @@ Resource.Parameters.rx_channel = rx_channel;
 Resource.Parameters.tx_channel = tx_channel;
 Resource.Parameters.positions = positions;
 Resource.Parameters.fakeScanhead = 1;
-Resource.Parameters.verbose = 3;
 Resource.Parameters.failed = 0;
 % Resource.Parameters.simulateMode = 1; % runs script in simulate mode
 RcvProfile.AntiAliasCutoff = 10; %allowed values are 5, 10, 15, 20, and 30
@@ -200,9 +195,9 @@ Event(n).seqControl = nsc;
     SeqControl(nsc).argument = f/200e-9;
     SeqControl(nsc).condition = 'Hw&Sw';
     nsc = nsc+1;
-    SeqControl(nsc).command = 'timeToNextAcq';
-    SeqControl(nsc).argument = 0.405*1e6;
-    nsc = nsc+1;
+%     SeqControl(nsc).command = 'timeToNextAcq';
+%     SeqControl(nsc).argument = 0.405*1e6;
+%     nsc = nsc+1;
  n = n+1;
 
 Event(n).info = 'Jump back to Event first Tx Event.';
