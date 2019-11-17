@@ -1,25 +1,20 @@
-function TxRx_mechanical_scan(positions, app)
+function TestTxRx_mechanical_scan()
 evalin('base','clear');
 %% User defined Scan Parameters
 TxEvents = 4;
 NA = 20;
 NA = TxEvents*NA;
-nPositions = size(positions,1);
-disp(['num positions', num2str(nPositions)]);
 nFrames = 2;
-prf = 500;
+prf = 1000;
 rate = 0.007; % ms delay per step
-positioner_delays = get_positioner_delays(app, positions,rate); % Positioner delay in ms
-disp('max time');
-disp(max(positioner_delays));
-f = max(positioner_delays);
+positions = rand(50,3);
 centerFrequency = 0.5; % Frequency in MHz
 num_half_cycles = 12; % Number of half cycles to use in each pulse
 desiredDepth = 155; % Desired depth in mm
 endDepth = desiredDepth;
 rx_channel = 97;
 tx_channel = 82;
-Vpp = 40;
+Vpp = 5;
 
 %% Setup System
 % Since there are often long pauses after moving the positioner
@@ -31,7 +26,6 @@ Resource.Parameters.numTransmit = rx_channel; % no. of transmit channels
 Resource.Parameters.numRcvChannels = rx_channel; % change to 64 for Vantage 64 system
 Resource.Parameters.connector = 1; % trans. connector to use (V 256). Use 0 for 129-256
 Resource.Parameters.speedOfSound = 1540; % speed of sound in m/sec
-Resource.Parameters.app = app;
 Resource.Parameters.position_index = 1;
 Resource.Parameters.numAvg = NA;
 Resource.Parameters.rx_channel = rx_channel;
@@ -135,19 +129,12 @@ for n = 1:NA
     Receive(n).acqNum = n;
 end
 
-% Process(1).classname = 'External';
-% Process(1).method = 'getVerasonicsWaveform';
-% Process(1).Parameters = {'srcbuffer','receive',... % name of buffer to process.
-% 'srcbufnum',1,...
-% 'srcframenum',1,...
-% 'dstbuffer','none'};
 Process(1).classname = 'External';
-Process(1).method = 'verasonicsWaveform3DScan';
+Process(1).method = 'MyExternFunctionAveraging';
 Process(1).Parameters = {'srcbuffer','receive',... % name of buffer to process.
 'srcbufnum',1,...
 'srcframenum',1,...
 'dstbuffer','none'};
-
 
 % Specify an external processing event.
 Process(2).classname = 'External';
@@ -170,7 +157,6 @@ firstEvent.seqControl = [1,2];
     SeqControl(nsc).argument = (1/prf)*1e6;
     nsc = nsc+1;
 
-
 tx_count = 1;
 for ii = 1:NA
     Event(n) = firstEvent;
@@ -185,21 +171,26 @@ for ii = 1:NA
     n = n+1;
 end
 
-Event(n).info = 'Acquire a waveform and move positioner';
+Event(n).info = 'Acquire a waveform';
 Event(n).tx = 0; % no TX structure.
 Event(n).rcv = 0; % no Rcv structure.
 Event(n).recon = 0; % no reconstruction.
 Event(n).process = 1; 
 n = n+1;
 
-% Event(n).info = 'Move Positioner.';
-% Event(n).tx = 0; 
-% Event(n).rcv = 0;
-% Event(n).recon = 0;
-% Event(n).process = 2;
-% n = n+1;
+Event(n).info = 'Move Positioner.';
+Event(n).tx = 0; 
+Event(n).rcv = 0;
+Event(n).recon = 0;
+Event(n).process = 2;
+% Need to sync or the verasonics system will acquire data faster 
+% than the positioner moves
+% Event(n).seqControl = nsc; 
+%     SeqControl(nsc).command = 'sync';
+%     nsc = nsc+1;
+n = n+1;
 
-% % Set a delay after moving the positioner.
+% Set a delay after moving the positioner.
 % Event(n).info = 'Wait';
 % Event(n).tx = 0; 
 % Event(n).rcv = 0;
@@ -207,8 +198,9 @@ n = n+1;
 % Event(n).process = 0;
 % Event(n).seqControl = nsc;
 %     SeqControl(nsc).command = 'noop';
-%     SeqControl(nsc).argument = f/200e-9;
+%     SeqControl(nsc).argument = .1/200e-9;
 %     SeqControl(nsc).condition = 'Hw&Sw';
+%  Resource.Parameters.motorDelayNum = nsc;
 %     nsc = nsc+1;
 % %     SeqControl(nsc).command = 'timeToNextAcq';
 % %     SeqControl(nsc).argument = 0.405*1e6;
@@ -232,9 +224,9 @@ EF(1).Function = {'external_quit(RData)',...
 };
 
 % Save all the structures to a .mat file.
-svName = 'C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\TxRx_mechanical_scan';
+svName = 'C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\TestTxRx_mechanical_scan';
 filename = svName;
 save(svName);
-evalin('base', 'load(''C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\TxRx_mechanical_scan.mat'')');
+evalin('base', 'load(''C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\TestTxRx_mechanical_scan.mat'')');
 evalin('base','VSX');
 end
