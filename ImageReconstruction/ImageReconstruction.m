@@ -4,7 +4,7 @@ control_data_directory = [data_directory,name,'Control','\'];
 
 Receive = evalin('base','Receive');
 Resource = evalin('base','Resource');
-scale_mm_per_voxel = 1;
+scale_mm_per_voxel = 0.75;
 c= Resource.Parameters.speedOfSound;
 fs = Receive(1).ADCRate*1e6/Receive(1).decimFactor;
 TxEvents = Resource.Parameters.TxEvents; 
