@@ -38,7 +38,7 @@ x1 = 850; x2 = xcorr_window(2);
 c_data = zero_data(data, x1, x2);
 c_control_data = zero_data(control_data, x1, x2);
 
-[c_data, N] = data_to_image(c_data, fs, c, scale_mm_per_voxel, xcorr_signal);
+[c_data, N] = data_to_image(c_data, xcorr_signal, L, fs, c, scale_mm_per_voxel);
 
 V = zeros(N);
 tx = [2,4];
