@@ -1,53 +1,52 @@
-name = '2DScan4';
+name = '2DScan9';
 data_directory = ['C:\Users\Tom\Documents\MATLAB\', name, '\'];
-control_data_directory = [data_directory,name,'control','\'];
-
+control_data_directory = [data_directory,name,'Control','\'];
 
 Receive = evalin('base','Receive');
 Resource = evalin('base','Resource');
 scale_mm_per_voxel = 1;
 c= Resource.Parameters.speedOfSound;
 fs = Receive(1).ADCRate*1e6/Receive(1).decimFactor;
-volume_center_length = 12;
-Z_lower_bound = 36;
-innerRadius = 17;
+TxEvents = Resource.Parameters.TxEvents; 
+NA = Resource.Parameters.NA/TxEvents;
 
-data = get_2D_scan_data(data_directory,fs);
-control_data = get_2D_scan_data(control_data_directory, fs);
-
+data = get2DScanData(data_directory, fs, TxEvents, NA);
+control_data = get2DScanData(control_data_directory, fs, TxEvents, NA);
 
 nSamples = length(data(1).xdr_1);
-if 1
+if 0
     [xcorr_window(1), xcorr_window(2)] = getRxWindow(zeros(1,nSamples), control_data(1).xdr_2(1,:));
 else
-    xcorr_window = [3098, 3522];
+    xcorr_window = [3725, 4641];
 end
 
-xcorr_signal = control_data(1).xdr_2(:,xcorr_window(1):xcorr_window(2));
-xcorr_signal = horzcat(xcorr_signal, zeros(2, nSamples - length(xcorr_signal)));
+for i = 1:TxEvents
+    if i <= TxEvents/2
+        xcorr_signal_i = control_data(1).xdr_2(i,xcorr_window(1):xcorr_window(2));
+        xcorr_signal(i,:) = horzcat(xcorr_signal_i, zeros(1, nSamples - length(xcorr_signal_i)));
+    else
+        xcorr_signal_i = control_data(1).xdr_1(i,xcorr_window(1):xcorr_window(2));
+        xcorr_signal(i,:) = horzcat(xcorr_signal_i, zeros(1, nSamples - length(xcorr_signal_i)));
+    end
+end
 
 L = getTransducerSeparation(control_data, xcorr_signal, fs, c);
 
-
 data = set_data_xyz_position(data, L/2);
 
-x1 = 600; x2 = xcorr_window(2);
+x1 = 850; x2 = xcorr_window(2);
 c_data = zero_data(data, x1, x2);
 c_control_data = zero_data(control_data, x1, x2);
 
-data_length_mm = nSamples*1/fs*c*1000/2;
-x_axis = (1:nSamples)*1/fs*c*1000/2;
-N_data = round(1/scale_mm_per_voxel*data_length_mm);
-Nx = round(1/scale_mm_per_voxel*L);
-Ny = round(1/scale_mm_per_voxel*L);
-p = get_unique_positions(c_data);
-Nz = round(1/scale_mm_per_voxel*max(p{3}));
+[c_data, N] = data_to_image(c_data, fs, c, scale_mm_per_voxel, xcorr_signal);
 
-[Vcorr_4, c_data] = data_to_image(c_data, Nx, Ny, Nz, N_data, L, xcorr_signal, 1);
-
-
-% V1 = zero_volume_center(V, volume_center_length);
-% 
-% V1 = zero_upper_edge(V1, Z_lower_bound, innerRadius);
+V = zeros(N);
+tx = [2,4];
+for i = 1:length(c_data)
+    echo_ijk = c_data(i).echo_ijk;
+    for j = 1:length(tx)
+        V(echo_ijk(tx(j),1), echo_ijk(tx(j),2), echo_ijk(tx(j),3))=1;
+    end
+end
 
 % niftiwrite(demo2,'C:\Users\Tom\Documents\MATLAB\V301demo2.nii');
