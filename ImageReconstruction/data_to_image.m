@@ -1,6 +1,11 @@
-function [V, data] = data_to_image(data, Nx, Ny, Nz, N_data, L, xcorr_signal, tx_i)
-    V = zeros(Nx,Ny,Nz);
+function [data, N] = data_to_image(data, xcorr_signal, L, fs, c, scale_mm_per_voxel)
+    nSamples = length(data(1).xdr_1);
+    data_length_mm = nSamples*1/fs*c*1000/2;
+    Nx = round(1/scale_mm_per_voxel*L);
+    Ny = round(1/scale_mm_per_voxel*L);
     p = get_unique_positions(data);
+    Nz = round(1/scale_mm_per_voxel*max(p{3}));
+
     N = [Nx, Ny, Nz];
     XYZ = cell(1,3);
     for i = 1:3
@@ -8,14 +13,18 @@ function [V, data] = data_to_image(data, Nx, Ny, Nz, N_data, L, xcorr_signal, tx
     end
 
     for i = 1:length(data)
-        ijk = coordinates_to_index(XYZ, data(i).v_xyz);
-        [V, d, d_ijk, line_ijk] = add_data_to_grid(ijk, data(i), XYZ, V, N_data, L, xcorr_signal, tx_i);
+        try
+        [d, d_ijk] = add_data_to_grid(data(i), xcorr_signal, XYZ, L, data_length_mm);
         data(i).echo_i = d;
         data(i).echo_ijk = d_ijk;
-        data(i).line_ijk = line_ijk;
-        data(i).tx_i = tx_i;
-        if mod(i, 500)==0
+        if d_ijk(4, 2)==Ny
+            disp(i)
+        end
+        if mod(i, 100)==0
             disp(['On ', num2str(i), ' of ', num2str(length(data))]);
+        end
+        catch 
+            disp(['error on ', num2str(i)]);
         end
     end
 
