@@ -135,26 +135,11 @@ for n = 1:NA
     Receive(n).acqNum = n;
 end
 
-% Process(1).classname = 'External';
-% Process(1).method = 'getVerasonicsWaveform';
-% Process(1).Parameters = {'srcbuffer','receive',... % name of buffer to process.
-% 'srcbufnum',1,...
-% 'srcframenum',1,...
-% 'dstbuffer','none'};
 Process(1).classname = 'External';
 Process(1).method = 'verasonicsWaveform3DScan';
 Process(1).Parameters = {'srcbuffer','receive',... % name of buffer to process.
 'srcbufnum',1,...
 'srcframenum',1,...
-'dstbuffer','none'};
-
-
-% Specify an external processing event.
-Process(2).classname = 'External';
-Process(2).method = 'movePositionerGridScan';
-Process(2).Parameters = {'srcbuffer','receive',... % name of buffer to process.
-'srcbufnum',1,...
-'srcframenum',-1,...
 'dstbuffer','none'};
 
 n = 1;
@@ -192,28 +177,6 @@ Event(n).recon = 0; % no reconstruction.
 Event(n).process = 1; 
 n = n+1;
 
-% Event(n).info = 'Move Positioner.';
-% Event(n).tx = 0; 
-% Event(n).rcv = 0;
-% Event(n).recon = 0;
-% Event(n).process = 2;
-% n = n+1;
-
-% % Set a delay after moving the positioner.
-% Event(n).info = 'Wait';
-% Event(n).tx = 0; 
-% Event(n).rcv = 0;
-% Event(n).recon = 0;
-% Event(n).process = 0;
-% Event(n).seqControl = nsc;
-%     SeqControl(nsc).command = 'noop';
-%     SeqControl(nsc).argument = f/200e-9;
-%     SeqControl(nsc).condition = 'Hw&Sw';
-%     nsc = nsc+1;
-% %     SeqControl(nsc).command = 'timeToNextAcq';
-% %     SeqControl(nsc).argument = 0.405*1e6;
-% %     nsc = nsc+1;
-%  n = n+1;
 
 Event(n).info = 'Jump back to Event first Tx Event.';
 Event(n).tx = 0; % no TX structure.

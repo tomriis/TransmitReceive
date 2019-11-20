@@ -2,7 +2,7 @@ function d_steps = move_positioner(app, current_pos,next_pos, varargin)
     rate = 0.008;
     d_steps = round((next_pos-current_pos)./app.scale);
     disp(num2str(d_steps));
-    pulse_duration = [1000, 5000, 10000];
+    pulse_duration = [1000, 1000, 10000];
     safetyFactor = 1.5;
     
     pins = {{app.x_dir_pin, app.x_step_pin};
