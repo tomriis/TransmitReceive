@@ -1,5 +1,5 @@
 function TxRx_mechanical_scan(positions, app)
-evalin('base','clear');
+evalin('base','clear all');
 %% User defined Scan Parameters
 TxEvents = 4;
 NA = 20;
@@ -7,7 +7,7 @@ NA = TxEvents*NA;
 nPositions = size(positions,1);
 disp(['num positions', num2str(nPositions)]);
 nFrames = 2;
-prf = 500;
+prf = 1000;
 rate = 0.007; % ms delay per step
 positioner_delays = get_positioner_delays(app, positions,rate); % Positioner delay in ms
 disp('max time');
@@ -19,7 +19,7 @@ desiredDepth = 155; % Desired depth in mm
 endDepth = desiredDepth;
 rx_channel = 97;
 tx_channel = 82;
-Vpp = 40;
+Vpp = 5;%40;
 
 %% Setup System
 % Since there are often long pauses after moving the positioner

@@ -1,5 +1,4 @@
 function TestTxRx_mechanical_scan()
-evalin('base','clear');
 %% User defined Scan Parameters
 TxEvents = 4;
 NA = 20;
@@ -178,17 +177,17 @@ Event(n).recon = 0; % no reconstruction.
 Event(n).process = 1; 
 n = n+1;
 
-Event(n).info = 'Move Positioner.';
-Event(n).tx = 0; 
-Event(n).rcv = 0;
-Event(n).recon = 0;
-Event(n).process = 2;
-% Need to sync or the verasonics system will acquire data faster 
-% than the positioner moves
-% Event(n).seqControl = nsc; 
-%     SeqControl(nsc).command = 'sync';
-%     nsc = nsc+1;
-n = n+1;
+% Event(n).info = 'Move Positioner.';
+% Event(n).tx = 0; 
+% Event(n).rcv = 0;
+% Event(n).recon = 0;
+% Event(n).process = 2;
+% % Need to sync or the verasonics system will acquire data faster 
+% % than the positioner moves
+% % Event(n).seqControl = nsc; 
+% %     SeqControl(nsc).command = 'sync';
+% %     nsc = nsc+1;
+% n = n+1;
 
 % Set a delay after moving the positioner.
 % Event(n).info = 'Wait';
@@ -222,6 +221,14 @@ EF(1).Function = {'external_quit(RData)',...
 'VsClose',...
 'return',...
 };
+fs = 25000000;
+dLow = designfilt('lowpassfir','PassbandFrequency',600000, ...
+     'StopbandFrequency',1000000,'PassbandRipple',0.0001, ...
+     'StopbandAttenuation',20,'DesignMethod','kaiserwin', 'SampleRate',fs);
+
+dHigh = designfilt('highpassfir','PassbandFrequency',300000, ...
+     'StopbandFrequency',50000,'PassbandRipple',0.0001, ...
+     'StopbandAttenuation',30,'DesignMethod','kaiserwin', 'SampleRate',fs);
 
 % Save all the structures to a .mat file.
 svName = 'C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\TestTxRx_mechanical_scan';
