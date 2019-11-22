@@ -1,5 +1,5 @@
 function TxRx_mechanical_scan(positions, app)
-evalin('base','clear');
+evalin('base','clear all');
 %% User defined Scan Parameters
 TxEvents = 4;
 NA = 20;
@@ -7,7 +7,7 @@ NA = TxEvents*NA;
 nPositions = size(positions,1);
 disp(['num positions', num2str(nPositions)]);
 nFrames = 2;
-prf = 500;
+prf = 1000;
 rate = 0.007; % ms delay per step
 positioner_delays = get_positioner_delays(app, positions,rate); % Positioner delay in ms
 disp('max time');
@@ -137,26 +137,11 @@ for n = 1:NA
     Receive(n).acqNum = n;
 end
 
-% Process(1).classname = 'External';
-% Process(1).method = 'getVerasonicsWaveform';
-% Process(1).Parameters = {'srcbuffer','receive',... % name of buffer to process.
-% 'srcbufnum',1,...
-% 'srcframenum',1,...
-% 'dstbuffer','none'};
 Process(1).classname = 'External';
 Process(1).method = 'verasonicsWaveform3DScan';
 Process(1).Parameters = {'srcbuffer','receive',... % name of buffer to process.
 'srcbufnum',1,...
 'srcframenum',1,...
-'dstbuffer','none'};
-
-
-% Specify an external processing event.
-Process(2).classname = 'External';
-Process(2).method = 'movePositionerGridScan';
-Process(2).Parameters = {'srcbuffer','receive',... % name of buffer to process.
-'srcbufnum',1,...
-'srcframenum',-1,...
 'dstbuffer','none'};
 
 n = 1;

@@ -10,6 +10,8 @@ function MyExternFunctionAveraging(RData)
     N = 41;
     Resource = evalin('base','Resource');
     Receive = evalin('base','Receive');
+%     dLow = evalin('base','dLow');
+%     dHigh = evalin('base','dHigh');
     if isempty(myHandle) || ~ishandle(myHandle)
         myFigureHandle = figure;
         myHandle = axes('NextPlot','replacechildren');
@@ -30,7 +32,14 @@ function MyExternFunctionAveraging(RData)
     
     tx_channel = Resource.Parameters.tx_channel;
     [rx_data, tx_data] = get_frame_acq(RData, Resource, Receive, 1);
-
+%     channels = [1,N];
+%     for i = 1:length(channels)
+%             j = channels(i);
+%             tx_data(j, :) = filtfilt(dLow, tx_data(j, :));
+%             rx_data(j, :) = filtfilt(dLow, rx_data(j, :));
+%             tx_data(j, :) = filtfilt(dHigh, tx_data(j, :));
+%             rx_data(j, :) = filtfilt(dHigh, rx_data(j, :));
+%     end
     
     movegui(myFigureHandle,[100 500]);
     title(myHandle, strcat(['Channel ', num2str(tx_channel)]));
