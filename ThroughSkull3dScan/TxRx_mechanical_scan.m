@@ -194,29 +194,6 @@ Event(n).recon = 0; % no reconstruction.
 Event(n).process = 1; 
 n = n+1;
 
-% Event(n).info = 'Move Positioner.';
-% Event(n).tx = 0; 
-% Event(n).rcv = 0;
-% Event(n).recon = 0;
-% Event(n).process = 2;
-% n = n+1;
-
-% % Set a delay after moving the positioner.
-% Event(n).info = 'Wait';
-% Event(n).tx = 0; 
-% Event(n).rcv = 0;
-% Event(n).recon = 0;
-% Event(n).process = 0;
-% Event(n).seqControl = nsc;
-%     SeqControl(nsc).command = 'noop';
-%     SeqControl(nsc).argument = f/200e-9;
-%     SeqControl(nsc).condition = 'Hw&Sw';
-%     nsc = nsc+1;
-% %     SeqControl(nsc).command = 'timeToNextAcq';
-% %     SeqControl(nsc).argument = 0.405*1e6;
-% %     nsc = nsc+1;
-%  n = n+1;
-
 Event(n).info = 'Jump back to Event first Tx Event.';
 Event(n).tx = 0; % no TX structure.
 Event(n).rcv = 0; % no Rcv structure.
@@ -226,12 +203,6 @@ Event(n).seqControl = nsc; % jump back to Event 1
 SeqControl(nsc).command = 'jump';
 SeqControl(nsc).condition = 'exitAfterJump';
 SeqControl(nsc).argument = 1;
-
-
-EF(1).Function = {'external_quit(RData)',...
-'VsClose',...
-'return',...
-};
 
 % Save all the structures to a .mat file.
 svName = 'C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\TxRx_mechanical_scan';

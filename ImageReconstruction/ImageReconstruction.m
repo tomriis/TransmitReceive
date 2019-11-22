@@ -1,9 +1,10 @@
-name = '2DScan9';
+name = '2DScan9Taylor';
 data_directory = ['C:\Users\Tom\Documents\MATLAB\', name, '\'];
 control_data_directory = [data_directory,name,'Control','\'];
 
-Receive = evalin('base','Receive');
-Resource = evalin('base','Resource');
+Receive = load([data_directory,'Parameters\','parameters.mat'],'Receive');
+Resource = load([data_directory,'Parameters\','parameters.mat'],'Resource');
+Receive = Receive.Receive; Resource = Resource.Resource;
 scale_mm_per_voxel = 0.75;
 c= Resource.Parameters.speedOfSound;
 fs = Receive(1).ADCRate*1e6/Receive(1).decimFactor;
@@ -14,10 +15,10 @@ data = get2DScanData(data_directory, fs, TxEvents, NA);
 control_data = get2DScanData(control_data_directory, fs, TxEvents, NA);
 
 nSamples = length(data(1).xdr_1);
-if 0
+if 1
     [xcorr_window(1), xcorr_window(2)] = getRxWindow(zeros(1,nSamples), control_data(1).xdr_2(1,:));
 else
-    xcorr_window = [3725, 4641];
+    xcorr_window = [3842, 4628];
 end
 
 for i = 1:TxEvents
