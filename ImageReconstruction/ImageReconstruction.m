@@ -16,7 +16,7 @@ control_data = get2DScanData(control_data_directory, fs, TxEvents, NA);
 
 nSamples = length(data(1).xdr_1);
 if 1
-    [xcorr_window(1), xcorr_window(2)] = getRxWindow(zeros(1,nSamples), control_data(1).xdr_2(1,:));
+    [xcorr_window(1), xcorr_window(2)] = getRxWindow(control_data(1).xdr_1(4,:), control_data(1).xdr_2(1,:));
 else
     xcorr_window = [3842, 4628];
 end
@@ -35,7 +35,7 @@ L = getTransducerSeparation(control_data, xcorr_signal, fs, c);
 
 data = set_data_xyz_position(data, L/2);
 
-x1 = 850; x2 = xcorr_window(2);
+x1 = 600; x2 = xcorr_window(2);
 c_data = zero_data(data, x1, x2);
 c_control_data = zero_data(control_data, x1, x2);
 

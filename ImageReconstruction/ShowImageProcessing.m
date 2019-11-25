@@ -1,5 +1,4 @@
-function ShowImageProcessing(c_data, i, tx_i)
-h = figure; 
+function [app] = ShowImageProcessing(c_data, i, tx_i, h, app)
 m_plot = 1;
 n_plot = 2;
 p = 1;
@@ -23,6 +22,7 @@ plot(data.echo_i(tx_i), f(data.echo_i(tx_i)),'b*');
 title('Raw Data');
 xlabel('t (us)');
 p = p+1;
+hold off;
 
 % Correlation %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 subplot(m_plot, n_plot, p);
@@ -37,10 +37,11 @@ for i = 1:length(pks)
     plot(lags(locs(i)),pks(i),'r*'); hold on;
 end
 [~, ind] = min(abs(lags-data.echo_i(tx_i)));
-plot(data.echo_i(tx_i), hilbert_c(ind),'b*');
-
-set(h,'Position',[10 100 1200 500])
+app.oversight.roi = images.roi.Point(gca, 'Position',[data.echo_i(tx_i), hilbert_c(ind)]);
+% plot(data.echo_i(tx_i), hilbert_c(ind),'b*');
+hold off;
+set(h,'Position',[750 50 1200 500])
 axesHandles = findobj(get(h,'Children'), 'flat','Type','axes');
-% axis(axesHandles,'square')
+axis(axesHandles,'square')
 makeFigureBig(h);
 
