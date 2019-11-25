@@ -19,6 +19,7 @@ else
 end
 plot(f); hold on;
 plot(data.echo_i(tx_i), f(data.echo_i(tx_i)),'b*');
+app.oversight.roi1 = images.roi.Point(gca, 'Position',[data.echo_i(tx_i),f(data.echo_i(tx_i))]);
 title('Raw Data');
 xlabel('t (us)');
 p = p+1;
