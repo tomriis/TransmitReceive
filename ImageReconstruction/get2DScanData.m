@@ -31,6 +31,7 @@ dHigh = designfilt('highpassfir','PassbandFrequency',300000, ...
         all_data(count).position = S.data.positions; 
         all_data(count).TxEvents = TxEvents;
         all_data(count).NA = NA;
+        all_data(count).fs = fs;
         count = count + 1;
 
         disp(['On ',num2str(i), ' of ', num2str(length(Files))]);

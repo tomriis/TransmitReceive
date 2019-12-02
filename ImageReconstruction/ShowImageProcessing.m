@@ -11,6 +11,7 @@ t= (1/fs:1/fs:(nSamples*1/fs))*1e6;
 x = (1:nSamples)*1540e3/fs/2; %cm
 
 % RAW DATA PLOT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+disp(['This is echo i: ', num2str(data.echo_i(tx_i))]);
 subplot(m_plot, n_plot, p);
 if tx_i <=2
     f = data.xdr_1(tx_i,:);
@@ -39,6 +40,7 @@ for i = 1:length(pks)
 end
 [~, ind] = min(abs(lags-data.echo_i(tx_i)));
 app.oversight.roi = images.roi.Point(gca, 'Position',[data.echo_i(tx_i), hilbert_c(ind)]);
+app.oversight.peak_i = lags(locs);
 % plot(data.echo_i(tx_i), hilbert_c(ind),'b*');
 hold off;
 set(h,'Position',[750 50 1200 500])
