@@ -1,3 +1,4 @@
+
 function TxRx_mechanical_scan(positions, app)
 evalin('base','clear all');
 %% User defined Scan Parameters
@@ -15,11 +16,11 @@ disp(max(positioner_delays));
 f = max(positioner_delays);
 centerFrequency = 0.5; % Frequency in MHz
 num_half_cycles = 12; % Number of half cycles to use in each pulse
-desiredDepth = 155; % Desired depth in mm
+desiredDepth = 185; % Desired depth in mm
 endDepth = desiredDepth;
 rx_channel = 97;
 tx_channel = 82;
-Vpp = 5;%40;
+Vpp = 40;
 
 %% Setup System
 % Since there are often long pauses after moving the positioner
@@ -189,12 +190,6 @@ Event(n).seqControl = nsc; % jump back to Event 1
 SeqControl(nsc).command = 'jump';
 SeqControl(nsc).condition = 'exitAfterJump';
 SeqControl(nsc).argument = 1;
-
-
-EF(1).Function = {'external_quit(RData)',...
-'VsClose',...
-'return',...
-};
 
 % Save all the structures to a .mat file.
 svName = 'C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\TxRx_mechanical_scan';
