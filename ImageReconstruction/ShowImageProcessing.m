@@ -1,11 +1,8 @@
-function ShowImageProcessing(data, c_data)
-h = figure; 
+function [app] = ShowImageProcessing(c_data, i, tx_i, h, app)
 m_plot = 2;
 n_plot = 2;
 p = 1;
-tx_i = data.tx_i;
-
-
+data = c_data(i);
 fs = evalin('base','fs');
 xcorr_signal = evalin('base','xcorr_signal');
 
@@ -13,90 +10,73 @@ nSamples = length(data(1).xdr_1);
 t= (1/fs:1/fs:(nSamples*1/fs))*1e6;
 x = (1:nSamples)*1540e3/fs/2; %cm
 
-%subplot(m_plot, n_plot, p);
-f_rx = data.xdr_1(tx_i,:);
-
-f = data.xdr_1(tx_i,:);
-u = mean(f);
-sig = std(f);
-[c, lags] = xcorr(f, xcorr_signal(tx_i,:));
-fh = abs(hilbert(f));
-xcorrh =abs(hilbert(xcorr_signal(tx_i,:)));
-[ch, lagsh] = xcorr(fh, xcorrh);
-ch = ch(lagsh>0);
-lagsh = lagsh(lagsh>0);
-
-c = c(lags>0);
-lags = lags(lags>0);
+% RAW DATA PLOT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+disp(['This is echo i: ', num2str(data.echo_i(tx_i))]);
 subplot(m_plot, n_plot, p);
-plot(t, f,'DisplayName','Tx'); hold on;
-corr_marker = zeros(1,nSamples);
-corr_marker(data.echo_i) = max(f);
-
-% plot(lags*1/fs*1000,c/max(c)*max(f))
-plot(t, corr_marker); hold on;
-plot(t,u+sig*ones(size(t)),'DisplayName','Rx');
-plot(t,u+2*sig*ones(size(t)),'DisplayName','Rx');
-title('Tx Data');
-xlabel('t (us)');
-legend
-
-p=p+1;
-subplot(m_plot, n_plot,p);
-hilbert_c = abs(hilbert(c));
-
-plot(hilbert_c/max(hilbert_c),'DisplayName','hilbert C'); hold on;
-plot(c/max(c),'DisplayName', 'Original C'); hold on;
-
-[ max_corr_i, mph ] = findMaxCorrelation(data.xdr_1(tx_i,:), xcorr_signal(tx_i,:));
-plot(max_corr_i, hilbert_c(max_corr_i)/max(hilbert_c),'b*');
-plot(mph*ones(size(c))/max(hilbert_c)); hold on;
+f = plotRawData(data, tx_i);
+app.oversight.roi1 = images.roi.Point(gca, 'Position',[data.echo_i(tx_i),f(data.echo_i(tx_i))]);
 p = p+1;
+hold off;
 
-
-
-
-
+% Correlation %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 subplot(m_plot, n_plot, p);
-plot(t, fh,'DisplayName','Tx'); hold on;
-plot(lagsh*1/fs*1e6, (ch/max(ch))*max(fh),'DisplayName','xcorr'); hold on;
-[pks, locs] = findpeaks(ch,'MinPeakHeight',0.33*max(ch)); hold on;
+[lags, hilbert_c, locs] = plotCorrelationData(f, xcorr_signal, tx_i);
+[~, ind] = min(abs(lags-data.echo_i(tx_i)));
+app.oversight.roi = images.roi.Point(gca, 'Position',[data.echo_i(tx_i), hilbert_c(ind)]);
+app.oversight.peak_i = lags(locs);
+p = p+1;
+hold off;
 
-xcx = (1:length(xcorrh))*1/fs*1e6;
-
-plot(locs(1)*1/fs*1e6, (pks(1)/max(ch))*max(fh), 'b*'); hold on;
-plot(xcx, circshift(xcorrh, locs(1))/max(xcorrh)*max(fh),'DisplayName', 'OrigSignal')
-legend;
-p=p+1;
-
-subplot(m_plot,n_plot,p);
-Nx = 234; Ny = 234; N_data = 159; L = 234;
-v = data.v_xyz;
-x_end = -v(1);
-y_end = v(2)-L*sin(deg2rad(data.position(3)));
-z_end = v(3);
-im = zeros(Nx, Ny);
-for i = 1:length(data.line_ijk)
-    im(data.line_ijk(i,1),data.line_ijk(i,2)) = 1;
+if tx_i == 2
+    tx_i_2 = 1;
+else
+    tx_i_2 = 3;
 end
-[ max_corr_i ] = findMaxCorrelation(data.xdr_1(tx_i,:), xcorr_signal(tx_i,:));
-i = round(max_corr_i/length(data.xdr_1(tx_i,:)) * N_data);
+%%% Second Row
+%%%% plot raw data
+subplot(m_plot, n_plot, p);
+plotRawData(data,tx_i_2);
+app.oversight.roi3 = images.roi.Point(gca, 'Position',[data.echo_i(tx_i),f(data.echo_i(tx_i))]);
+p = p+1;
+hold off;
 
-XYZ = evalin('base','XYZ');
-scalar = max_corr_i/length(data.xdr_1(tx_i,:));
-    echo_xy = v(1:2) + scalar* [x_end-v(1), y_end-v(2)]*159/234;
-    echo_ijk = coordinates_to_index(XYZ,[echo_xy, v(3)]);
-im(echo_ijk(1), echo_ijk(2)) = 2;   
-    
-im(data.line_ijk(i,1), data.line_ijk(i,2)) = 2;
-imagesc(im);
-% xyz = zeros(length(data),3);
-% for i = 1:length(c_data)
-%     xyz(i,:) = c_data(i).v_xyz;
-% end
-% plot(xyz(:,2),-xyz(:,1),'b*');hold on;
-% plot(data.v_xyz(2), -data.v_xyz(1),'r*');
+%%%% plot correlation data
+subplot(m_plot, n_plot, p);
+[lags, hilbert_c, locs] = plotCorrelationData(f, xcorr_signal, tx_i_2);
+p = p+1;
+hold off;
 
+set(h,'Position',[720 0 1200 1000])
 axesHandles = findobj(get(h,'Children'), 'flat','Type','axes');
-% axis(axesHandles,'square')
+axis(axesHandles,'square')
 makeFigureBig(h);
+
+end
+
+function f = plotRawData(data, tx_i)
+    if tx_i <=2
+        f = data.xdr_1(tx_i,:);
+    else
+        f = data.xdr_2(tx_i,:);
+    end
+    plot(f); hold on;
+    plot(data.echo_i(tx_i), f(data.echo_i(tx_i)),'b*');
+    title(['Echo Index: ',num2str(data.echo_i(tx_i))]);
+end
+
+function [lags, hilbert_c, locs] = plotCorrelationData(f, xcorr_signal, tx_i)
+    [c, lags] = xcorr(f, xcorr_signal(tx_i,:));
+    hilbert_c = abs(hilbert(c));
+    u = mean(hilbert_c); sig = std(hilbert_c);    
+    minPeakHeight = u + 1.5*sig;
+    minPeakProminence = 0.15 * max(hilbert_c);
+    mask = lags>=0;
+    hilbert_c2 = hilbert_c(mask);
+    lags2 = lags(mask);
+    
+    [pks, locs] = findpeaks(hilbert_c,'MinPeakHeight',minPeakHeight,'MinPeakProminence',minPeakProminence);
+    plot(lags2, hilbert_c2); hold on; 
+    for i = 1:length(pks)
+        plot(lags(locs(i)),pks(i),'r*'); hold on;
+    end
+end

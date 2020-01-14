@@ -180,7 +180,6 @@ Event(n).recon = 0; % no reconstruction.
 Event(n).process = 1; 
 n = n+1;
 
-
 Event(n).info = 'Jump back to Event first Tx Event.';
 Event(n).tx = 0; % no TX structure.
 Event(n).rcv = 0; % no Rcv structure.
