@@ -11,7 +11,12 @@ function [data, min_idx, tx_i] = findDataFromIdx(c_data, ijk)
     
     data = c_data(min_idx);
     
-    disp(['min_idx is ', num2str(min_idx)])
     [~, tx_i] =  min(sum(abs(c_data(min_idx).echo_ijk-ijk),2));
+    % TODO remove this hard coding to select certain echo
+    if tx_i == 1
+        tx_i = 2;
+    elseif tx_i == 3
+        tx_i = 4;
+    end
 end
     

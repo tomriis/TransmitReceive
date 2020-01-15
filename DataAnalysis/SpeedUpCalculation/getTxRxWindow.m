@@ -1,18 +1,18 @@
-function [x1, x2] = getRxWindow(ws_data, wos_data)
+function [x1, x2] = getTxRxWindow(xdr_1_data, xdr_2_data, xdr_1_i, xdr_2_i)
     h = figure;
-    if isstruct(ws_data)
-        for i = 1:length(ws_data)
-            plot(ws_data(i).xdr_2(1,:)); hold on;
+    if isstruct(xdr_2_data)
+        for i = 1:length(xdr_2_data)
+            plot(xdr_2_data(i).xdr_2(xdr_2_i,:)); hold on;
         end
     else
-        plot(ws_data);  hold on;
+        plot(xdr_2_data);  hold on;
     end
-    if isstruct(wos_data)
-        for i = 1:length(wos_data)
-            plot(wos_data(i).xdr_2(1,:),'black-'); hold on;
+    if isstruct(xdr_1_data)
+        for i = 1:length(xdr_1_data)
+            plot(xdr_1_data(i).xdr_1(xdr_1_i,:),'black-'); hold on;
         end
     else
-        plot(wos_data);
+        plot(xdr_2_data);
     end
     hold off;
     title('Create search area and press any key to continue');

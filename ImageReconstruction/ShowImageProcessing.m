@@ -3,15 +3,14 @@ m_plot = 2;
 n_plot = 2;
 p = 1;
 data = c_data(i);
-fs = evalin('base','fs');
+fs = c_data(i).fs;
 xcorr_signal = evalin('base','xcorr_signal');
 
 nSamples = length(data(1).xdr_1);
 t= (1/fs:1/fs:(nSamples*1/fs))*1e6;
-x = (1:nSamples)*1540e3/fs/2; %cm
+x = (1:nSamples)*c_data(1).c*1e3/fs/2; %cm
 
 % RAW DATA PLOT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-disp(['This is echo i: ', num2str(data.echo_i(tx_i))]);
 subplot(m_plot, n_plot, p);
 f = plotRawData(data, tx_i);
 app.oversight.roi1 = images.roi.Point(gca, 'Position',[data.echo_i(tx_i),f(data.echo_i(tx_i))]);
@@ -29,8 +28,12 @@ hold off;
 
 if tx_i == 2
     tx_i_2 = 1;
-else
+elseif tx_i == 1
+    tx_i_2 = 2;
+elseif tx_i == 4
     tx_i_2 = 3;
+elseif tx_i == 3
+    tx_i_2 = 4;
 end
 %%% Second Row
 %%%% plot raw data
@@ -46,7 +49,7 @@ subplot(m_plot, n_plot, p);
 p = p+1;
 hold off;
 
-set(h,'Position',[720 0 1200 1000])
+set(h,'Position',[720 0 900 900])
 axesHandles = findobj(get(h,'Children'), 'flat','Type','axes');
 axis(axesHandles,'square')
 makeFigureBig(h);
