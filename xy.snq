@@ -1,0 +1,368 @@
+[Soniq Version]
+Number	5.3.8.0
+Serial Number	0259
+Soniq.exe CRC32	14C8A264
+
+[User]
+Name
+
+[Transducer]
+Model	Custom 34 Guage Wire
+Serial	002
+System Model
+System Serial
+System Software Rev.
+Frequency	0.65 MHz
+PRF	0.0325 Hz
+Power	-1395000 mW
+Bounded Power	-1395000 mW
+Bounded Square Power	-1395000 mW
+Mode
+Scanned	FALSE
+XDim	1.27
+YDim	1.27
+Circular	TRUE
+TPWidth	1.27
+FLX	0
+FLY	0
+Curved	FALSE
+Sector Scanner	FALSE
+Radius	0
+Line Spacing	0
+Diameter	0.6
+Line Angle	0
+Line Count	1
+Frame Rate	0
+Pulses Per Scan Line	1
+Zbp	0.898634102409097
+Cranial Use	FALSE
+
+[Hydrophone]
+Model	HGL-0200
+Serial Number	1782
+Preamp Model	AG2010
+Preamp Serial Number	1199
+Inverted	FALSE
+Voltage Limit	2
+Conversion Type	Look Up
+Use Nonlinearity Correction	FALSE
+Temperature	0
+Krf	0
+Table File Name
+Calibration Date	1/29/2019
+Calibration File Name	C:\Users\Verasonics\Desktop\Taylor\Code\aims\Calibrations\Combined\HGL0200-1782_AG2010-1199-20_xx_20190129.txt
+Sensitivity
+0.25	0.1596
+0.3	0.1837
+0.35	0.1887
+0.4	0.2107
+0.45	0.2195
+0.5	0.2232
+0.55	0.2273
+0.6	0.2254
+0.65	0.2186
+0.7	0.2218
+0.75	0.2134
+0.8	0.2141
+0.85	0.2095
+0.9	0.2055
+0.95	0.2048
+1	0.1926
+
+[Medium]
+Temperature	25
+Velocity	1496.69
+
+[Orientation]
+Round Trip	FALSE
+X Axis	1
+Y Axis	0
+Beam Axis	2
+Azimuthal Axis	3
+Elevational Axis	4
+
+[Distance Tracking]
+Enabled	FALSE
+Delay Offset	0
+Use Diagonal	FALSE
+
+[Oscilloscope]
+Manufacturer	Pico Technology
+Model	5244A
+Serial	FW908/007
+CH1 VperDiv	0.002
+CH1 Coupling	0
+CH1 Offset	0
+CH1 Probe	1
+CH1 Inverted	FALSE
+CH1 BWLimited	FALSE
+CH2 VperDiv	0.1
+CH2 Coupling	3
+CH2 Offset	0
+CH2 Probe	1
+CH2 Inverted	FALSE
+CH2 BWLimited	FALSE
+Use Offset	FALSE
+SecPerDiv	2E-5
+Delay	0
+Average	FALSE
+Median	FALSE
+Averages	16
+Use Correlation	TRUE
+Points	6250
+TriggerSource	0
+TriggerMode	0
+TriggerSlope	FALSE
+TriggerCoupling	1
+TriggerLevel	0.45
+RemoteAveraging	FALSE
+ShowWFWindow	TRUE
+WFSource	1
+Reference	0
+CanChangeSampleMode	FALSE
+RealTime	TRUE
+Acq. Type	Normal
+TriggerType	Edge
+TriggerHoldoff	0
+TriggerQualifier	Less Than
+TriggerLessThanTime	0
+TriggerGreaterThanTime	0
+IdleTime	0
+NthEdge	0
+Resolution	8
+WF Time Out	1
+YDivs	10
+
+[Positioner Config]
+Type	EMDSUSBE
+Firmware Version	1.1.6
+Serial Number	2106
+
+[Positioner]
+Left/Right Spring Installed	TRUE
+Front/Back Spring Installed	TRUE
+Springs Verified	TRUE
+Config Verified	TRUE
+Axis 0 Name	Left/Right
+Axis 0 Linear	TRUE
+Axis 0 Units	mm
+Axis 0 StepsPerMeterOrRev	90230
+Axis 0 Scale Factor	1000
+Axis 0 Position	0
+Axis 0 Low Limit	-50
+Axis 0 High Limit	100
+Axis 0 Increment	0.5
+Axis 0 Overshoot	0
+Axis 0 Reversed	FALSE
+Axis 0 Limit Switches Reversed	FALSE
+Axis 0 Ignore Limit Switches	FALSE
+Axis 0 StepsPerSecond	1000
+Axis 0 MinStepsPerSecond	800
+Axis 0 RampSteps	40
+Axis 0 Axis to Track	-1
+Axis 1 Name	Front/Back
+Axis 1 Linear	TRUE
+Axis 1 Units	mm
+Axis 1 StepsPerMeterOrRev	90230
+Axis 1 Scale Factor	1000
+Axis 1 Position	0
+Axis 1 Low Limit	-100
+Axis 1 High Limit	100
+Axis 1 Increment	0.5
+Axis 1 Overshoot	0
+Axis 1 Reversed	FALSE
+Axis 1 Limit Switches Reversed	FALSE
+Axis 1 Ignore Limit Switches	FALSE
+Axis 1 StepsPerSecond	1000
+Axis 1 MinStepsPerSecond	800
+Axis 1 RampSteps	40
+Axis 1 Axis to Track	-1
+Axis 2 Name	Up/Down
+Axis 2 Linear	TRUE
+Axis 2 Units	mm
+Axis 2 StepsPerMeterOrRev	90230
+Axis 2 Scale Factor	1000
+Axis 2 Position	3.1
+Axis 2 Low Limit	3
+Axis 2 High Limit	100
+Axis 2 Increment	1
+Axis 2 Overshoot	0
+Axis 2 Reversed	FALSE
+Axis 2 Limit Switches Reversed	FALSE
+Axis 2 Ignore Limit Switches	FALSE
+Axis 2 StepsPerSecond	1000
+Axis 2 MinStepsPerSecond	800
+Axis 2 RampSteps	40
+Axis 2 Axis to Track	-1
+Axis 3 Name	Ang. Arm
+Axis 3 Linear	FALSE
+Axis 3 Units	deg.
+Axis 3 StepsPerMeterOrRev	7200
+Axis 3 Scale Factor	360
+Axis 3 Position	-2.925
+Axis 3 Low Limit	-45
+Axis 3 High Limit	90
+Axis 3 Increment	5
+Axis 3 Overshoot	1
+Axis 3 Reversed	FALSE
+Axis 3 Limit Switches Reversed	FALSE
+Axis 3 Ignore Limit Switches	FALSE
+Axis 3 StepsPerSecond	200
+Axis 3 MinStepsPerSecond	160
+Axis 3 RampSteps	40
+Axis 3 Axis to Track	-1
+Axis 4 Name	Ang. Turntable
+Axis 4 Linear	FALSE
+Axis 4 Units	deg.
+Axis 4 StepsPerMeterOrRev	7200
+Axis 4 Scale Factor	360
+Axis 4 Position	-222.85
+Axis 4 Low Limit	-120
+Axis 4 High Limit	40
+Axis 4 Increment	10
+Axis 4 Overshoot	1
+Axis 4 Reversed	FALSE
+Axis 4 Limit Switches Reversed	FALSE
+Axis 4 Ignore Limit Switches	FALSE
+Axis 4 StepsPerSecond	200
+Axis 4 MinStepsPerSecond	160
+Axis 4 RampSteps	40
+Axis 4 Axis to Track	3
+Axis 5 Name	Unused
+Axis 5 Linear	TRUE
+Axis 5 Units	mm
+Axis 5 StepsPerMeterOrRev	90230
+Axis 5 Scale Factor	1000
+Axis 5 Position	6.212
+Axis 5 Low Limit	-100
+Axis 5 High Limit	100
+Axis 5 Increment	1
+Axis 5 Overshoot	1
+Axis 5 Reversed	FALSE
+Axis 5 Limit Switches Reversed	FALSE
+Axis 5 Ignore Limit Switches	FALSE
+Axis 5 StepsPerSecond	1000
+Axis 5 MinStepsPerSecond	800
+Axis 5 RampSteps	40
+Axis 5 Axis to Track	-1
+Use Machine Coordinates	TRUE
+X Angle	0
+Y Angle	0
+Z Angle	0
+Angular Positioner Installed	FALSE
+
+[Options]
+Subtract Mean Peak	TRUE
+Subtract Mean RMS	TRUE
+Subtract Mean Integral	TRUE
+
+[System Info]
+Computer Name	VERASONICS
+Computer Mfg.	Dell Inc.
+Computer Model	Precision 5820 Tower
+OS	Microsoft Windows 10 Enterprise 2016 LTSB 64-bit
+OS Version	10.0.14393.0
+OS Serial Number	00380-71600-11266-AAOEM
+System Drive	C:\
+System Drive Serial Number	06A4A847
+Processor Mfg.	GenuineIntel
+Processor Desc.	Intel64 Family 6 Model 85 Stepping 4
+Clock Speed	3.31 GHz
+Total Memory	31.68 GB
+Free Memory	26.69 GB
+Local IP Address	155.98.15.127
+Public IP Address	155.98.15.127
+
+[File Info]
+Date	1/2/2020 9:24:11 AM
+
+[1D Scan]
+Auto Scale Mode	Auto
+Line Width	1
+View Mode	2048
+Selected	0
+View Derated	FALSE
+Scale Mode	Linear
+After Scan	GoBack
+Pause	100
+Elapsed Time	00:00:10.363
+Record Waveforms	FALSE
+Record Pressure Waveforms	FALSE
+Save Waveforms	FALSE
+Real Time Plotting	TRUE
+Start Temperature	25
+End Temperature	25
+Parameter 0	Negative Peak Voltage	V
+Use Pressure WF	FALSE
+Axis	2
+Points	49
+Start Position	3.4
+End Position	30
+Smoothed	FALSE
+WFIndex	2
+XCount	1
+XMin	0
+XMax	0
+XIncrement	0
+YCount	49
+YMin	3.4
+YMax	30
+YIncrement	0.554166666666667
+
+[1D Scan Data]
+	0
+3.4	-0.0100032740029937
+3.95416666666667	-0.00726160352289095
+4.50833333333333	-0.00520453889214667
+5.0625	-0.00311826412574039
+5.61666666666667	-0.00244529421266285
+6.17083333333333	-0.00322639412258868
+6.725	-0.00354519816460204
+7.27916666666667	-0.00342529620609013
+7.83333333333333	-0.00364893401775509
+8.3875	-0.00420621311727213
+8.94166666666667	-0.00410012774224277
+9.49583333333333	-0.00322049372898065
+10.05	-0.00375139733529883
+10.6041666666667	-0.00442589530872647
+11.1583333333333	-0.00476445189766469
+11.7125	-0.00395987630228396
+12.2666666666667	-0.00387191769966506
+12.8208333333333	-0.00495359850909677
+13.375	-0.00519695429697516
+13.9291666666667	-0.00443145303528407
+14.4833333333333	-0.00420309490822139
+15.0375	-0.00464363126386423
+15.5916666666667	-0.00497760426672874
+16.1458333333333	-0.00475205982016516
+16.7	-0.00430194448251161
+17.2541666666667	-0.00442319634230109
+17.8083333333333	-0.00474937084449339
+18.3625	-0.00432637046625139
+18.9166666666667	-0.00408726598104462
+19.4708333333333	-0.00409385633506346
+20.025	-0.00464459804570768
+20.5791666666667	-0.00420445775293745
+21.1333333333333	-0.00376122395967017
+21.6875	-0.00390245446170098
+22.2416666666667	-0.00442524949236773
+22.7958333333333	-0.00377371894001379
+23.35	-0.00352746563563473
+23.9041666666667	-0.00365204991380102
+24.4583333333333	-0.00365399528765236
+25.0125	-0.00396373535774997
+25.5666666666667	-0.00354372454284923
+26.1208333333333	-0.00364928259064094
+26.675	-0.0032290553429001
+27.2291666666667	-0.00344121908975183
+27.7833333333333	-0.00331745730230003
+28.3375	-0.00333117944786325
+28.8916666666667	-0.00332317009707447
+29.4458333333333	-0.00333038992976537
+30	-0.00332045449741301
+
+[Calculations]
+Z Distance	3.1
+Temperature	25
+Center	3.4
+

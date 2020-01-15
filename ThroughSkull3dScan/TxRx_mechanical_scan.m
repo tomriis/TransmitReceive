@@ -1,3 +1,4 @@
+
 function TxRx_mechanical_scan(positions, app)
 evalin('base','clear all');
 %% User defined Scan Parameters
@@ -15,7 +16,7 @@ disp(max(positioner_delays));
 f = max(positioner_delays);
 centerFrequency = 0.5; % Frequency in MHz
 num_half_cycles = 12; % Number of half cycles to use in each pulse
-desiredDepth = 155; % Desired depth in mm
+desiredDepth = 185; % Desired depth in mm
 endDepth = desiredDepth;
 rx_channel = 97;
 tx_channel = 82;

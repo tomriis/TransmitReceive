@@ -3,7 +3,7 @@ function d_steps = move_positioner(app, current_pos,next_pos, varargin)
     disp(num2str(d_steps));
 
     pulse_duration = [1000, 1000, 10000];
-    safetyFactor = 1.2;
+    safetyFactor = 1.5;
     
     pins = {{app.x_dir_pin, app.x_step_pin};
             {app.y_dir_pin, app.y_step_pin};
@@ -33,6 +33,9 @@ function d_steps = move_positioner(app, current_pos,next_pos, varargin)
                 dur = pulse_duration(i)*1e-6*abs(d_steps(i))*2*safetyFactor;
                 disp(['Pause for ', num2str(dur)]);
                 pause(dur);
+                if i == 3 && abs(d_steps(3)>1)
+                    pause(3)
+                end
             end
             pause(varargin{1});
         end
