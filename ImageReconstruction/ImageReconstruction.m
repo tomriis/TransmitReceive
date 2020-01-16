@@ -51,26 +51,17 @@ for i = 1:length(c_data)
     c_data(i).offset = offset;
 end
 
-[c_data, N] = data_to_image(c_data(1:length(c_data)), xcorr_signal, L, fs, c, scale_mm_per_voxel);
+[c_data, N] = data_to_image(c_data(length(c_data)/2:length(c_data)), xcorr_signal, L, fs, c, scale_mm_per_voxel);
 
-V_1 = zeros(N);
+V = zeros(N);
 tx = [2,4];
-c_data_1 = c_data(1:length(c_data)/2);
-for i = 1:length(c_data_1)
+for i = 1:length(c_data)
     echo_ijk = c_data(i).echo_ijk;
     for j = 1:length(tx)
-        V_1(echo_ijk(tx(j),1), echo_ijk(tx(j),2), echo_ijk(tx(j),3))=1;
+        V(echo_ijk(tx(j),1), echo_ijk(tx(j),2), echo_ijk(tx(j),3))=1;
     end
 end
 
-V_2 = zeros(N);
-tx = [2,4];
-c_data_2 = c_data(length(c_data)/2:length(c_data));
-for i = length(c_data_2):length(c_data)
-    echo_ijk = c_data(i).echo_ijk;
-    for j = 1:length(tx)
-        V_2(echo_ijk(tx(j),1), echo_ijk(tx(j),2), echo_ijk(tx(j),3))=1;
-    end
-end
+
 
 % niftiwrite(demo2,'C:\Users\Tom\Documents\MATLAB\V301demo2.nii');
