@@ -5,7 +5,7 @@ function surface = get3DSurface(volume)
     K = convhull(x,y,z);
     figure;
     trisurf(K,x,y,z,'Facecolor','cyan');
-    
+    axis equal
     i = round(size(volume,3)/2);
     plane = squeeze(volume(:,:,1));
     idx = find(plane);

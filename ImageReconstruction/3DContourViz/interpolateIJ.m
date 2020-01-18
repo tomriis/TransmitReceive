@@ -4,7 +4,7 @@ function [x1, y1, x2, y2] = interpolateIJ(i,j,flipped_flag)
        else
            iv = j; jv = i;
        end
-        [jv, idx] = unique(jv, 0);
+        [jv, idx] = unique(jv);
         midpoint = mean(iv);
         iv = iv(idx);
         firstHalfInd = iv>midpoint;

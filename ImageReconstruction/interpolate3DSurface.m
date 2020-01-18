@@ -1,4 +1,4 @@
-function interpolate3DSurface(volume)
+function volume = interpolate3DSurface(volume)
     xyz = [];
     for k = 1:size(volume,3)
         if sum(volume(:,:,k),'all')>0
@@ -17,42 +17,40 @@ function interpolate3DSurface(volume)
             [i, j] = getPlaneCoordinates(volume, k);
             for flipped_flag = 1:2
                 if length(i)>20       
-                    try
-                        [x1, y1, x2, y2] = interpolateIJ(i,j,flipped_flag);
-
+                    
+                   [x1, y1, x2, y2] = interpolateIJ(i,j,flipped_flag);
+                   try
                         for p = 1:length(x1)
                             volume(x1(p), y1(p), k) = 1;
                         end
                         for p = 1:length(x2)
                             volume(x2(p), y2(p), k) = 1;
                         end
-                    catch e
-                        disp(e.message)
-                    end
+                   end
                 end
             end
         end
     end
-    % YZ Plane
-    for k = 1:size(volume,2)   
-        if sum(volume(:,k,:),'all')>0
-            plane = squeeze(volume(:,k,:));
-            idx = find(plane);
-            [i, j] = ind2sub(size(plane), idx);
-            for flipped_flag = 1 
-                if length(i)>20
-                    [x1, y1, x2, y2] = interpolateIJ(i,j,flipped_flag);
-                    for p = 1:length(x1)
-                            volume(x1(p),k, y1(p)) = 1;
-                    end
-                    for p = 1:length(x2)
-                            volume(x2(p), k, y2(p)) = 1;
-                    end
-                end
-            end
-        end
-    end
-end
+%     % YZ Plane
+%     for k = 1:size(volume,2)   
+%         if sum(volume(:,k,:),'all')>0
+%             plane = squeeze(volume(:,k,:));
+%             idx = find(plane);
+%             [i, j] = ind2sub(size(plane), idx);
+%             for flipped_flag = 1 
+%                 if length(i)>20
+%                     [x1, y1, x2, y2] = interpolateIJ(i,j,flipped_flag);
+%                     for p = 1:length(x1)
+%                             volume(x1(p),k, y1(p)) = 1;
+%                     end
+%                     for p = 1:length(x2)
+%                             volume(x2(p), k, y2(p)) = 1;
+%                     end
+%                 end
+%             end
+%         end
+%     end
+% end
 
 
             
