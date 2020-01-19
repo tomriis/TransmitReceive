@@ -49,6 +49,9 @@ for i = 1:length(c_data)
     c_data(i).c = c;
     c_data(i).L = L;
     c_data(i).offset = offset;
+    c_data(i).x1 = x1;
+    c_data(i).x2 = x2;
+    c_data(i).masked = zeros(1,c_data(i).TxEvents);
 end
 
 [c_data, N] = data_to_image(c_data(length(c_data)/2:length(c_data)), xcorr_signal, L, fs, c, scale_mm_per_voxel);

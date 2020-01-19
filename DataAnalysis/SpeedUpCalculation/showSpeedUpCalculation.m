@@ -1,22 +1,34 @@
-function showSpeedUpCalculation(data, c_data)
+function showSpeedUpCalculation(c_data, c_data_i, tx_i)
     h = figure;
     m_plot = 3;
     n_plot = 1;
     p = 1;
-    
-    c_control_data = evalin('base', 'c_control_data');
+    if tx_i <= c_data(c_data_i).TxEvents/2
+        tx_i = 1;
+    else
+        tx_i = 3;
+    end
     subplot(m_plot, n_plot, p);
-    plot(c_control_data(1).xdr_2(1,:)); hold on; plot(data.xdr_2(1,:));
+    plot(c_data(c_data_i).ws_data(tx_i,:),'r-','DisplayName','Skull'); hold on; 
+    plot(c_data(c_data_i).wos_data(tx_i,:),'b-','DisplayName','No Skull');
+    legend;
+    title('Original Waveforms')
     p=p+1;
    
     subplot(m_plot, n_plot, p);
-    plot(data.wos_data,'b-','DisplayName','Without'); hold on; plot(data.ws_data,'r-','DisplayName','With');
-    title([num2str(data.dt(1)),' us'])
-    legend;
+    corr_data = c_data(c_data_i).corr(tx_i,:);
+    di = c_data(c_data_i).di(tx_i);
+    plot(corr_data/max(corr_data)); hold on;
+    plot(di+1, 1,'r*');
+    title('Correlation')
+    ylim([-1.5,1.5]);
     p = p+1;
     
     subplot(m_plot, n_plot, p);
-    plot(data.wos_data,'b-'); hold on; plot(circshift(data.ws_data,data.di(1)),'r-');
-    title([num2str(data.di(1)),' samples'])
-
+    
+    plot(c_data(c_data_i).wos_data(tx_i,:),'b-'); hold on; 
+    plot(circshift(c_data(c_data_i).ws_data(tx_i,:), di),'r-');
+    dt = di / c_data(c_data_i).fs * 1e6;
+    title(['Delay: ',num2str(dt),' microseconds'])
+    makeFigureBig(h);
 end
