@@ -81,9 +81,10 @@ function [lags, hilbert_c, locs] = plotCorrelationData(f, xcorr_signal, tx_i)
     hilbert_c = abs(hilbert(c));
     u = mean(hilbert_c); sig = std(hilbert_c);    
     minPeakHeight = u + 1.5*sig;
-    minPeakProminence = 0.15 * max(hilbert_c);
+    minPeakProminence = 0.01 * max(hilbert_c);
     mask = lags>=0;
     hilbert_c2 = hilbert_c(mask);
+    c2 = c(mask);
     lags2 = lags(mask);
     
     [pks, locs] = findpeaks(hilbert_c,'MinPeakHeight',minPeakHeight,'MinPeakProminence',minPeakProminence);
@@ -91,5 +92,10 @@ function [lags, hilbert_c, locs] = plotCorrelationData(f, xcorr_signal, tx_i)
     for i = 1:length(pks)
         plot(lags(locs(i)),pks(i),'r*'); hold on;
     end
+    plot(lags2,c2); hold on;
+    uc = mean(c2); sigc = std(c2);
+    scaler = 3.0;
+    line = [lags2(1), minPeakHeight; lags2(end), minPeakHeight];
+    plot(line(:,1), line(:,2),'black--');
     title('Control and Reflected Waveform Correlation');
 end
