@@ -29,18 +29,8 @@ function [c_data, data_dt] = speedUpCalculation(c_data, c_control_data, varargin
         for i = 1:length(c_data)
             data_dt(i,:) = c_data(i).di(1);
         end
-%         inds = abs(data_dt(:,2)) < inf;
-%         figure; histogram(data_dt(inds,1)); hold on; histogram(data_dt(inds,2));
         figure; histogram(data_dt)
-%         inds = find(data_dt < 0);
-%         for i = 1:3
-%             k = randi(length(inds));
-%             figure; plot(c_data(inds(k)).ws_data,'r'); hold on;
-%             %plot(circshift(c_data(inds(k)).ws_data, c_data(inds(k)).di),'DisplayName','With'); hold on;
-%             plot(wos_data,'DisplayName', 'Without'); 
-%             title(num2str(c_data(inds(k)).di));
-%             %figure; plot(lags, c_data(inds(k)).hilbert_c);
-%         end 
+
 end
 
 function [c_data] = calculateSpeedUp(ws_data, wos_data, c_data,c_data_i, count)

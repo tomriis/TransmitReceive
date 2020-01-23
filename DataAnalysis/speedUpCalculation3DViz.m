@@ -21,7 +21,13 @@ function Vcolor = speedUpCalculation3DViz(c_data, V)
             end
         end
     end
-    C = C/fs * 1e6; 
+    C = C/fs * 1e6;
+for i = 1:length(C)
+    if C(i) > 5
+        C(i)=5;
+        disp(i)
+    end
+end
 h = figure;    
 scatter3(ijk_all(:,1),ijk_all(:,2),ijk_all(:,3),[],C);
 axis equal
@@ -30,7 +36,7 @@ hc = colorbar;
 caxis([0, max(C)]);
 ylabel(hc, 'Delay (us)')
 makeFigureBig(h);
-
+axis equal
 Vcolor = zeros(size(V));
 for m = 1:length(ijk_all)
     Vcolor(ijk_all(m,1), ijk_all(m,2), ijk_all(m,3)) = C(m);

@@ -78,10 +78,10 @@ end
 
 function [lags, hilbert_c, locs] = plotCorrelationData(f, xcorr_signal, tx_i)
     [c, lags] = xcorr(f, xcorr_signal(tx_i,:));
-    hilbert_c = abs(hilbert(c));
+    hilbert_c = c;%abs(hilbert(c));
     u = mean(hilbert_c); sig = std(hilbert_c);    
     minPeakHeight = u + 1.5*sig;
-    minPeakProminence = 0.01 * max(hilbert_c);
+    minPeakProminence = 0.15 * max(hilbert_c);
     mask = lags>=0;
     hilbert_c2 = hilbert_c(mask);
     c2 = c(mask);

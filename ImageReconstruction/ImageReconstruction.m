@@ -1,5 +1,5 @@
 name = '3DScan11';
-data_directory = ['C:\Users\Tom\Documents\MATLAB\', '3DScanFemaleSkull\'];
+data_directory = ['C:\Users\Tom\Documents\MATLAB\', '3DScan11Beaker\'];
 control_data_directory = ['C:\Users\Tom\Documents\MATLAB\',name,'Control','\'];
 
 Receive = load([data_directory,'Parameters\','parameters.mat'],'Receive');
