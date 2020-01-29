@@ -5,7 +5,7 @@ function [x1, x2] = getTxRxWindow(xdr_1_data, xdr_2_data, xdr_1_i, xdr_2_i)
             plot(xdr_2_data(i).xdr_2(xdr_2_i,:),'black-'); hold on;
         end
     else
-        plot(xdr_2_data);  hold on;
+        plot(xdr_1_data);  hold on;
     end
     if isstruct(xdr_1_data)
         for i = 1:length(xdr_1_data)

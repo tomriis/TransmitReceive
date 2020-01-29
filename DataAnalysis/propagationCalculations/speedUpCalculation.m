@@ -17,7 +17,7 @@ function [c_data, data_dt] = speedUpCalculation(c_data, c_control_data, varargin
                 ws_data = c_data(i).xdr_2(j, x1:x2);
             
                 [c_data] = calculateSpeedUp(ws_data, wos_data, c_data, i, j);
-            
+                
                 wos_data = c_control_data(1).xdr_1(j+c_data(1).TxEvents/2,x1:x2);
                 ws_data = c_data(i).xdr_1(j+c_data(1).TxEvents/2,x1:x2);
                 
@@ -35,7 +35,9 @@ end
 
 function [c_data] = calculateSpeedUp(ws_data, wos_data, c_data,c_data_i, count)
     [ws_data, wos_data] = scale_with_to_without_skull(ws_data,wos_data);
-    [c, lags] = xcorr(wos_data, ws_data);
+    ws_data_hilbert = abs(hilbert(ws_data));
+    wos_data_hilbert = abs(hilbert(wos_data));
+    [c, lags] = xcorr(wos_data_hilbert, ws_data_hilbert);
     c = c(lags >=0);
     lags = lags(lags >=0);
 
