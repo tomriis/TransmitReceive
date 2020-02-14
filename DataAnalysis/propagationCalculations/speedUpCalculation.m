@@ -13,12 +13,12 @@ function [c_data, data_dt] = speedUpCalculation(c_data, c_control_data, varargin
         for i = 1:length(c_data)
             for j = 1:c_data(1).TxEvents/2
        
-                wos_data =  c_control_data(1).xdr_2(j,x1:x2);
+                wos_data =  c_control_data(i).xdr_2(j,x1:x2);
                 ws_data = c_data(i).xdr_2(j, x1:x2);
             
                 [c_data] = calculateSpeedUp(ws_data, wos_data, c_data, i, j);
                 
-                wos_data = c_control_data(1).xdr_1(j+c_data(1).TxEvents/2,x1:x2);
+                wos_data = c_control_data(i).xdr_1(j+c_data(1).TxEvents/2,x1:x2);
                 ws_data = c_data(i).xdr_1(j+c_data(1).TxEvents/2,x1:x2);
                 
                 [c_data] = calculateSpeedUp(ws_data, wos_data, c_data,i, j+c_data(1).TxEvents/2);
@@ -27,30 +27,36 @@ function [c_data, data_dt] = speedUpCalculation(c_data, c_control_data, varargin
         end
         data_dt = zeros(length(c_data),1);
         for i = 1:length(c_data)
-            data_dt(i,:) = c_data(i).di(1);
+            data_dt(i,:) = c_data(i).di(2);
         end
         figure; histogram(data_dt)
 
 end
 
 function [c_data] = calculateSpeedUp(ws_data, wos_data, c_data,c_data_i, count)
-    [ws_data, wos_data] = scale_with_to_without_skull(ws_data,wos_data);
+%     [ws_data, wos_data] = scale_with_to_without_skull(ws_data,wos_data);
+    [~, max_wos_i] = max(wos_data);
+    [~, max_ws_i] = max(ws_data);
+    
     ws_data_hilbert = abs(hilbert(ws_data));
     wos_data_hilbert = abs(hilbert(wos_data));
     [c, lags] = xcorr(wos_data_hilbert, ws_data_hilbert);
-    c = c(lags >=0);
-    lags = lags(lags >=0);
+%     c = c(lags >=0);
+%     lags = lags(lags >=0);
 
     [pks, locs] = findpeaks(c);
     if ~isempty(locs)
         [~, c_peak_i] = max(pks); 
         max_i = lags(locs(c_peak_i));
     else
-        max_i = 0;
-        disp('NO PEAK');
+        [~, max_wos_i] = max(wos_data_hilbert);
+        [~, max_ws_i] = max(ws_data_hilbert);
+        [~,max_i] = max(c);
+        
     end
+    
     c_data(c_data_i).di(count) = max_i;
     c_data(c_data_i).ws_data(count,:) = ws_data;
     c_data(c_data_i).wos_data(count,:) = wos_data;
-    c_data(c_data_i).corr(count,:) = c;
+    c_data(c_data_i).corr2{count} = c;
 end

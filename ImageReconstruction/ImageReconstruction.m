@@ -43,23 +43,23 @@ measured_L = 296;
 c = c*measured_L/L;
 L = measured_L;
 offset = -5/2;
-data = set_data_xyz_position(data, L/2,-5/2);%-5/2
+rect_data = set_data_xyz_position(rect_data, L/2,-5/2);%-5/2
 random_i = randi(length(data),10,1);
 [x1, x2] = getTxRxWindow(data(random_i), data(random_i), 1, 3);
 
-c_data = zero_data(data, x1, x2);
+c_data_rect = zero_data(rect_data, x1, x2);
 c_control_data = zero_data(control_data, x1, x2);
 for i = 1:length(c_data)
-    c_data(i).c = c;
-    c_data(i).L = L;
-    c_data(i).offset = offset;
-    c_data(i).x1 = x1;
-    c_data(i).x2 = x2;
-    c_data(i).masked = zeros(1,c_data(i).TxEvents);
+    c_data_rect(i).c = c;
+    c_data_rect(i).L = L;
+    c_data_rect(i).offset = offset;
+    c_data_rect(i).x1 = x1;
+    c_data_rect(i).x2 = x2;
+    c_data_rect(i).masked = zeros(1,c_data(i).TxEvents);
 end
 
-[c_data, N] = data_to_image(c_data, xcorr_signal, L, fs, c, scale_mm_per_voxel);
+[c_data_rect, N] = data_to_image(c_data_rect, xcorr_signal, L, fs, c, scale_mm_per_voxel);
 
-[V] = volumeFromData(c_data, N);
+[V_rect] = volumeFromData(c_data_rect, N);
 
 % niftiwrite(demo2,'C:\Users\Tom\Documents\MATLAB\V301demo2.nii');

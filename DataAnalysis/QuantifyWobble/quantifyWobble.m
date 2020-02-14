@@ -11,10 +11,10 @@ function amatrix_cell = quantifyWobble(data,x1,x2)
         amatrix = [];
         for i = 1:length(random_i)
         ii = random_i(i); 
-            for j = 1:data(ii).NA
+            for j = 1:1%data(ii).NA
                 idx = (n-1)*data(ii).NA+j;
-                amatrix= vertcat(amatrix, data(ii).filt_xdr_1(idx,x1:x2));
-                %plot(data(ii).filt_xdr_2(idx,x1:x2)); hold on;
+                %amatrix= vertcat(amatrix, data(ii).filt_xdr_1(idx,x1:x2));
+                plot(data(ii).filt_xdr_2(idx,x1:x2)); hold on;
             end
         end
         %stdshade(amatrix, 0.5, 'b'); hold on;
