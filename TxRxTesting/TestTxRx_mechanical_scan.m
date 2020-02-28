@@ -4,15 +4,15 @@ TxEvents = 4;
 NA = 20;
 NA = TxEvents*NA;
 nFrames = 2;
-prf = 1000;
+prf = 500;
 rate = 0.007; % ms delay per step
 positions = rand(50,3);
 centerFrequency = 0.5; % Frequency in MHz
 num_half_cycles = 12; % Number of half cycles to use in each pulse
 desiredDepth = 185; % Desired depth in mm
 endDepth = desiredDepth;
-rx_channel = 97;
-tx_channel = 82;
+rx_channel = 126;
+tx_channel = 24;
 Vpp = 5;
 
 %% Setup System
@@ -59,7 +59,7 @@ Trans.maxHighVoltage = Vpp;
 
 % Specify Resource buffers.
 Resource.RcvBuffer(1).datatype = 'int16';
-Resource.RcvBuffer(1).rowsPerFrame = NA*2048*4; % this allows for 1/4 maximum range
+Resource.RcvBuffer(1).rowsPerFrame = NA*4096*4; % this allows for 1/4 maximum range
 Resource.RcvBuffer(1).colsPerFrame = Trans.numelements; % change to 256 for V256 system
 Resource.RcvBuffer(1).numFrames = nFrames; % minimum size is 1 frame.
 
@@ -118,7 +118,7 @@ firstReceive.bufnum = 1;
 firstReceive.framenum = 1;
 firstReceive.acqNum = 1;
 firstReceive.sampleMode = 'custom';
-firstReceive.decimSampleRate = 50*Trans.frequency;
+firstReceive.decimSampleRate = 50;
 firstReceive.LowPassCoef = [];
 firstReceive.InputFilter = [];
 
@@ -221,14 +221,14 @@ EF(1).Function = {'external_quit(RData)',...
 'VsClose',...
 'return',...
 };
-fs = 25000000;
-dLow = designfilt('lowpassfir','PassbandFrequency',600000, ...
-     'StopbandFrequency',1000000,'PassbandRipple',0.0001, ...
-     'StopbandAttenuation',20,'DesignMethod','kaiserwin', 'SampleRate',fs);
-
-dHigh = designfilt('highpassfir','PassbandFrequency',300000, ...
-     'StopbandFrequency',50000,'PassbandRipple',0.0001, ...
-     'StopbandAttenuation',30,'DesignMethod','kaiserwin', 'SampleRate',fs);
+% fs = 25000000;
+% dLow = designfilt('lowpassfir','PassbandFrequency',600000, ...
+%      'StopbandFrequency',1000000,'PassbandRipple',0.0001, ...
+%      'StopbandAttenuation',20,'DesignMethod','kaiserwin', 'SampleRate',fs);
+% 
+% dHigh = designfilt('highpassfir','PassbandFrequency',300000, ...
+%      'StopbandFrequency',50000,'PassbandRipple',0.0001, ...
+%      'StopbandAttenuation',30,'DesignMethod','kaiserwin', 'SampleRate',fs);
 
 % Save all the structures to a .mat file.
 svName = 'C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\TestTxRx_mechanical_scan';

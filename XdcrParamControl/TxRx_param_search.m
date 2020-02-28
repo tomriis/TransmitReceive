@@ -1,22 +1,18 @@
 function TxRx_param_search()
 evalin('base','clear all');
 %% User defined Scan Parameters
-NA = 15;
+NA = 1;
 NA = 2*NA;
 
-frequencies = [0.5:0.01:1];
-voltages = [15:5:45];
+prf = 500;
 
-nFrames = size(positions,1);
-prf = 1000;
-rate = 0.008; % ms delay per step
-positioner_delays = get_positioner_delays(app, positions,rate); % Positioner delay in ms
 centerFrequency = 0.5; % Frequency in MHz
 num_half_cycles = 1; % Number of half cycles to use in each pulse
 desiredDepth = 155; % Desired depth in mm
 endDepth = desiredDepth;
 rx_channel = 100;
-tx_channel = 1;
+tx_channel = 24;
+delay = 1;
 Vpp = 50;
 
 %% Setup System
@@ -24,18 +20,20 @@ Vpp = 50;
 % set a high timeout value for the verasonics DMA system
 Resource.VDAS.dmaTimeout = 10000;
 
+% Specify voltages
+Resource.Parameters.excitationVoltages = (1.6:5:40);
+Resource.Parameters.curExcitation=1;
+nFrames = length(Resource.Parameters.excitationVoltages);
 % Specify system parameters
 Resource.Parameters.numTransmit = rx_channel; % no. of transmit channels
 Resource.Parameters.numRcvChannels = rx_channel; % change to 64 for Vantage 64 system
 Resource.Parameters.connector = 1; % trans. connector to use (V 256). Use 0 for 129-256
 Resource.Parameters.speedOfSound = 1540; % speed of sound in m/sec
-Resource.Parameters.app = app;
-Resource.Parameters.position_index = 1;
 Resource.Parameters.numAvg = NA;
 Resource.Parameters.rx_channel = rx_channel;
 Resource.Parameters.tx_channel = tx_channel;
-Resource.Parameters.positions = positions;
 Resource.Parameters.fakeScanhead = 1;
+Resource.Parameters.num_half_cycles = num_half_cycles;
 % Resource.Parameters.simulateMode = 1; % runs script in simulate mode
 RcvProfile.AntiAliasCutoff = 10; %allowed values are 5, 10, 15, 20, and 30
 %RcvProfile.PgaHPF = 80; %enables the integrator feedback path, 0 disables
@@ -59,7 +57,7 @@ Trans.ElementSens = ones(101,1);
 Trans.connType = 1;
 Trans.Connector = (1:Trans.numelements)';
 Trans.impedance = 50;
-Trans.maxHighVoltage = Vpp;
+Trans.maxHighVoltage = max(Resource.Parameters.excitationVoltages);
 
 % Specify Resource buffers.
 Resource.RcvBuffer(1).datatype = 'int16';
@@ -80,13 +78,7 @@ assignin('base','Trans',Trans);
 assignin('base','Resource',Resource);
 TX(1).Delay = computeTXDelays(TX(1));
 
-TX(2).waveform = 1; % use 1st TW structure.
-TX(2).focus = 0;
-TX(2).Apod = zeros([1,Resource.Parameters.rx_channel]);
-TX(2).Apod(rx_channel)=1;
-TX(2).Delay = computeTXDelays(TX(1));
-
-TPC(1).hv = Vpp;
+TPC(1).hv = Resource.Parameters.excitationVoltages(1);
 
 % Specify TGC Waveform structure.
 TGC(1).CntrlPts = ones(1,8)*0;
@@ -122,7 +114,7 @@ end
 
 % Specify an external processing event.
 Process(1).classname = 'External';
-Process(1).method = 'N_dimensional_scan';
+Process(1).method = 'MyExternFunctionAveraging';
 Process(1).Parameters = {'srcbuffer','receive',... % name of buffer to process.
 'srcbufnum',1,...
 'srcframenum',-1,...
@@ -131,6 +123,13 @@ Process(1).Parameters = {'srcbuffer','receive',... % name of buffer to process.
 Process(2).classname = 'External';
 Process(2).method = 'external_quit';
 Process(2).Parameters = {'srcbuffer','receive',... % name of buffer to process.
+'srcbufnum',1,...
+'srcframenum',-1,...
+'dstbuffer','none'};
+
+Process(3).classname = 'External';
+Process(3).method = 'extern_set_voltage';
+Process(3).Parameters = {'srcbuffer','receive',... % name of buffer to process.
 'srcbufnum',1,...
 'srcframenum',-1,...
 'dstbuffer','none'};
@@ -164,17 +163,8 @@ for ii = 1:nFrames
         n = n+1;
     end
     if ii < nFrames
-%         Event(n).info = 'Sync before moving';
-%         Event(n).tx = 0; 
-%         Event(n).rcv = 0;
-%         Event(n).recon = 0;
-%         Event(n).process = 0;
-%         Event(n).seqControl = nsc; 
-%             SeqControl(nsc).command = 'sync';
-%             nsc = nsc+1;
-%         n = n+1;
         
-        Event(n).info = 'Move Positioner.';
+        Event(n).info = 'Plot waveform';
         Event(n).tx = 0; 
         Event(n).rcv = 0;
         Event(n).recon = 0;
@@ -186,6 +176,25 @@ for ii = 1:nFrames
 %             nsc = nsc+1;
         n = n+1;
         
+         Event(n).info = 'Set Voltage';
+        Event(n).tx = 0; 
+        Event(n).rcv = 0;
+        Event(n).recon = 0;
+        Event(n).process = 3;
+        n = n+1;
+        
+        Event(n).info = 'Changing TPC';
+        Event(n).tx = 0;
+        Event(n).rcv = 0; % use 1st Rcv structure.
+        Event(n).recon = 0; % no reconstruction.
+        Event(n).process = 0; % no processing
+        Event(n).seqControl = nsc;
+            SeqControl(nsc).command = 'setTPCProfile';
+                SeqControl(nsc).condition = 'immediate';
+                SeqControl(nsc).argument = 1;
+                nsc = nsc+1;
+        n = n+1;
+        
         % Set a delay after moving the positioner.
         Event(n).info = 'Wait';
         Event(n).tx = 0; 
@@ -194,29 +203,18 @@ for ii = 1:nFrames
         Event(n).process = 0;
         Event(n).seqControl = nsc;
             SeqControl(nsc).command = 'noop';
-            SeqControl(nsc).argument = (positioner_delays(ii))/200e-9;
+            SeqControl(nsc).argument = (delay)/200e-9;
             SeqControl(nsc).condition = 'Hw&Sw';
             nsc = nsc+1;
         n = n+1;
+        
+       
     end
 end
 
 
-% Event(n).info = 'Call external Processing function.';
-% Event(n).tx = 0; % no TX structure.
-% Event(n).rcv = 0; % no Rcv structure.
-% Event(n).recon = 0; % no reconstruction.
-% Event(n).process = 0; % call processing function
-% Event(n).seqControl = [nsc,nsc+1]; % wait for data to be transferred
-%     SeqControl(nsc).command = 'waitForTransferComplete';
-%     SeqControl(nsc).argument = 2;
-%     nsc = nsc+1;
-%     SeqControl(nsc).command = 'markTransferProcessed';
-%     SeqControl(nsc).argument = 2;
-%     nsc = nsc+1;
-% n = n+1;
 
-Event(n).info = 'close this bitch down';
+Event(n).info = 'close this down';
 Event(n).tx = 0; % no TX structure.
 Event(n).rcv = 0; % no Rcv structure.
 Event(n).recon = 0; % no reconstruction.
@@ -228,9 +226,9 @@ EF(1).Function = {'external_quit(RData)',...
 };
 
 % Save all the structures to a .mat file.
-svName = 'C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\TxRx_mechanical_scan';
+svName = 'C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\TxRx_param_search';
 filename = svName;
 save(svName);
-evalin('base', 'load(''C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\TxRx_mechanical_scan.mat'')');
+evalin('base', 'load(''C:\Users\Verasonics\Documents\MATLAB\TransmitReceive\MatFiles\TxRx_param_search.mat'')');
 evalin('base','VSX');
 end

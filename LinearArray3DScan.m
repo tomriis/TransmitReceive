@@ -44,7 +44,9 @@ Resource.Parameters.stim_freq = p.Results.stim_freq;
 Resource.parameters.duty_cycle = p.Results.duty_cycle;
 Resource.parameters.duration = p.Results.duration;
 Resource.parameters.prf = p.Results.prf;
-
+Resource.parameters.saveName = [num2str(p.Results.stim_freq),...
+            '_',num2str(p.Results.duty_cycle),'_',num2str(p.Results.duration),...
+            '_',num2str(p.Results.prf),'_',num2str(Vpp)];
 % Movement parameters
 Resource.Parameters.soniqLib = lib; 
 Resource.Parameters.numTransmit = transmit_channels;
