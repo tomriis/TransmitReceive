@@ -1,4 +1,4 @@
-function [ max_i, minPeakHeight ] = findMaxCorrelation(data, xcorr_signal)
+function [ max_i ] = findMaxCorrelation(data, xcorr_signal)
     [c, lags] = xcorr(data, xcorr_signal);
     hilbert_c = abs(hilbert(c));
     u = mean(hilbert_c); sig = std(hilbert_c);
@@ -13,6 +13,7 @@ function [ max_i, minPeakHeight ] = findMaxCorrelation(data, xcorr_signal)
     else
         max_i = 1;
         disp('NO PEAK');
+        return
     end
     
     minSignalAmplitude = 5;

@@ -13,7 +13,7 @@ function [echo_i, echo_ijk] = add_data_to_grid(data,xcorr_signal, XYZ, L, data_l
             v0 = v(2,:);
             vEnd = v(1,:);
         end       
-    echo_i(i) = findMaxCorrelation(tx_data, xcorr_signal(i,:));
+    echo_i(i) = findEchoLeadingEdge(tx_data, xcorr_signal(i,:));
     scalar = echo_i(i)/length(tx_data);
     echo_xyz = v0 + scalar*((vEnd-v0)/L)*data_length_mm;
     echo_ijk(i,:) = coordinates_to_index(XYZ,echo_xyz);

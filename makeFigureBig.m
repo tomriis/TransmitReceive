@@ -13,7 +13,7 @@ end
 if nargin < 4
     bgColor = 'w';
 end
-set(findall(h,'type','text'),'fontSize',fontSize)
-% set(findall(h,'type','text'),'color','k')
+set(gca,'fontSize',fontSize)
+set(findall(h,'type','text'),'color','k')
 set(gcf,'color',bgColor)
 %set(gca,'fontsize',axisFontSize)

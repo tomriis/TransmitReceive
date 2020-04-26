@@ -4,12 +4,13 @@ function L = getTransducerSeparation(control_data, xcorr_signal, fs, c)
     for i = 1:length(control_data)
         try
         f = control_data(i).xdr_2(1,:);
-        [ corr_i(i), ~ ] = findMaxCorrelation(f, xcorr_signal(1,:));
+        corr_i(i) = findMaxCorrelation(f, xcorr_signal(1,:));
         hilb = abs(hilbert(control_data(i).xdr_2(2,:)));
         [pks,locs,w]=findpeaks(hilb,'MinPeakHeight',0.65* max(f));
         [~,max_i] = max(pks);
         max_peak(i) = locs(max_i)-w(max_i)/2;
-        catch
+        catch e
+            disp(e.message)
             disp(i)
         end
     end

@@ -1,4 +1,5 @@
 function app = updateAppData(app, c_data_i, tx_i)
+%UPDATEAPPDATA  Updates the c_data echo_ijk and app.data
     echo_ijk = app.c_data(c_data_i).echo_ijk(tx_i,:);
     app.data(echo_ijk(1), echo_ijk(2), echo_ijk(3))=0;
     fs = app.fs;
