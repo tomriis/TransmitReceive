@@ -6,14 +6,14 @@ nFrames = 2;
 positionerDelay = 100; % Positioner delay in ms
 frame_rate = 5;
 rate = 0.007; % ms delay per step
-centerFrequency = 0.65; % Frequency in MHz
-num_half_cycles = 16; % Number of half cycles to use in each pulse
+centerFrequency = 1.5*0.65; % Frequency in MHz
+num_half_cycles = 1; % Number of half cycles to use in each pulse
 desiredDepth = 155; % Desired depth in mm
-rx_channel = 126;
-tx_channel = 24;
-Vpp = 90;
-lib = loadSoniqLibrary();
-openSoniq(lib);
+rx_channel = 100;
+tx_channel = 2;
+Vpp = 50;
+lib = 1;%loadSoniqLibrary();
+% openSoniq(lib);
 %% Setup System
 % Since there are often long pauses after moving the positioner
 % set a high timeout value for the verasonics DMA system
@@ -29,7 +29,7 @@ Resource.Parameters.numAvg = NA;
 Resource.Parameters.rx_channel = rx_channel;
 Resource.Parameters.tx_channel = tx_channel;
 Resource.Parameters.fakeScanhead = 1;
-Resource.Parameters.filename = 'C:\Users\Verasonics\Box Sync\TransducerCharacterizations\HGL0200\0.65MHz\MatchingLayer3DegassedSmallAmp\cone_none\verasonics\';
+Resource.Parameters.filename = 'C:\Users\Verasonics\Documents\MATLAB\';
 Resource.Parameters.saveName = [num2str(num_half_cycles),'_',num2str(Vpp)];
 Resource.Parameters.V = Vpp;
 Resource.Parameters.soniqLib = lib;
@@ -68,7 +68,7 @@ Resource.RcvBuffer(1).numFrames = nFrames; % minimum size is 1 frame.
 % Specify Transmit waveform structure.
 TW(1).type = 'parametric';
 TW(1).Parameters = [centerFrequency,0.67,num_half_cycles,1]; % A, B, C, D
-
+TW(1).equalize = 1;
 % Specify TX structure array.
 TX(1).waveform = 1; % use 1st TW structure.
 TX(1).focus = 0;
@@ -174,12 +174,12 @@ for ii = 1:nFrames
         n = n+1;
     end
     
-             Event(n).info = 'Save Soniq Waveform';
-        Event(n).tx = 0; 
-        Event(n).rcv = 0;
-        Event(n).recon = 0;
-        Event(n).process = 2;
-        n = n+1;
+%              Event(n).info = 'Save Soniq Waveform';
+%         Event(n).tx = 0; 
+%         Event(n).rcv = 0;
+%         Event(n).recon = 0;
+%         Event(n).process = 2;
+%         n = n+1;
         
 %     Event(n).info = 'Call external Processing function.';
 %     Event(n).tx = 0; % no TX structure.
